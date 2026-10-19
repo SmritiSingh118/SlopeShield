@@ -1,0 +1,12 @@
+location_id,name,lat,lon,static_score,dynamic_score,total_score,risk_level,current_rain_mm,forecast_24h_mm,humidity_pct
+RISH,Rishikesh,30.0869,78.2676,29.72,9.78,21.74,Low,1.0,8.0,72
+DEHR,Dehradun,30.3165,78.0322,37.21,11.03,26.74,Moderate,1.31,10.5,72
+MUSS,Mussoorie,30.4598,78.0644,49.8,18.09,37.12,Moderate,2.75,22.0,88
+RUDR,Rudraprayag,30.284,78.98,74.87,28.13,56.17,High,5.25,42.0,88
+UKHI,Ukhimath,30.51,79.09,51.56,14.8,36.86,Moderate,2.25,18.0,72
+KEDN,Kedarnath,30.7346,79.0669,61.44,26.13,47.32,Moderate,4.75,38.0,88
+CHAM,Chamoli,30.42,79.33,52.14,11.29,35.8,Moderate,1.38,11.0,72
+BADR,Badrinath,30.7433,79.4938,55.51,12.54,38.32,Moderate,1.69,13.5,72
+UTTK,Uttarkashi,30.7298,78.4434,55.09,13.8,38.57,Moderate,2.0,16.0,72
+GANG,Gangotri,30.9943,78.9398,52.43,15.05,37.48,Moderate,2.31,18.5,72
+MALP,Malpa,29.996,80.82,69.88,34.67,55.8,High,6.88,55.0,88
