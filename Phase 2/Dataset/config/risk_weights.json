@@ -1,0 +1,34 @@
+{
+  "static_weight": 0.6,
+  "dynamic_weight": 0.4,
+  "static": {
+    "slope": 0.30,
+    "history": 0.20,
+    "soil": 0.15,
+    "landuse": 0.12,
+    "lithology": 0.13,
+    "road": 0.10
+  },
+  "dynamic": {
+    "current_rain": 0.45,
+    "forecast_24h": 0.35,
+    "moisture": 0.20
+  },
+  "norm": {
+    "slope_max_deg": 70,
+    "elev_min_m": 380,
+    "elev_max_m": 3500,
+    "history_cap": 50,
+    "rain_cap_mm": 100
+  },
+  "thresholds": {
+    "low_max": 25,
+    "moderate_max": 50,
+    "high_max": 75
+  },
+  "lookup": {
+    "soil": {"sandy": 0.4, "silt": 0.55, "loamy": 0.7, "rocky": 0.85},
+    "landuse": {"dense-forest": 0.27, "open-forest": 0.45, "scrub": 0.5, "non-forest": 0.99},
+    "road": {"good": 0.2, "moderate": 0.5, "poor": 0.9}
+  }
+}
