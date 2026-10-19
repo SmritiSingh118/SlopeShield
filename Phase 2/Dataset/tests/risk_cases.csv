@@ -1,0 +1,7 @@
+case_id,location_id,current_rain_mm,forecast_24h_mm,humidity_pct,antecedent_3d_mm,expected_level,purpose
+dry_winter_RUDR,RUDR,0,0,30,0,Moderate,High-static site with zero rain must stay Moderate (static floor not Low)
+drizzle_DEHR,DEHR,2,8,60,5,Moderate,Low-static + drizzle reaches Moderate (static floor 22.3 + small dynamic lift)
+heavy_MUSS,MUSS,40,80,90,60,High,Steep site + heavy monsoon reaches High
+cloudburst_RUDR,RUDR,60,150,95,90,Critical,Cloudburst on densest slide zone must hit Critical
+highstatic_norain_MALP,MALP,0,0,35,0,Moderate,Steepest/lithology-worst site dry still Moderate (proves static matters)
+lowstatic_heavy_DEHR,DEHR,70,120,95,80,High,Low-static urban site + extreme rain lifts to High (proves dynamic matters)
