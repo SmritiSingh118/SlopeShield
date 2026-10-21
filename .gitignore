@@ -1,0 +1,28 @@
+# Environment variables and secrets
+.env
+.env.local
+*.env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# C++ compilation binaries and build artifacts
+*.exe
+*.o
+*.obj
+*.out
+build/
+
+# Local cache & data caches
+data/weather_cache/
+*.tmp
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
