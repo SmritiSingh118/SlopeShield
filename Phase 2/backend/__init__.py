@@ -1,6 +1,6 @@
 """
 SlopeShield Backend Package
-Author: Jahnvi Verma (Member 3)
+Author: Anshika Gaur (Member 3)
 """
 from backend.service import SlopeShieldBackend
 
