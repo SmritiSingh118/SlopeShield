@@ -1,5 +1,4 @@
-/**
- * ==============================================================================================
+
  * Project: SlopeShield — Intelligent Landslide Risk & Safe Route System
  * Member 2 Implementation: Safe Route Engine (C++ OOP & Data Structures)
  * Author: Jahnvi Verma (Member 2 — DSA & Safe Route Engine Lead)
