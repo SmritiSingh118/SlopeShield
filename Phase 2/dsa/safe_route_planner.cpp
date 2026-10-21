@@ -3,7 +3,7 @@
  * Member 2 Implementation: Safe Route Engine (C++ OOP & Data Structures)
  * Author: Jahnvi Verma (Member 2 — DSA & Safe Route Engine Lead)
  * ==============================================================================================
- * 
+ 
  * Complete implementation of all 7 assigned responsibilities using C++ OOP and DSA concepts:
  *   1. Graph Data Structure: Encapsulated Vertex, Edge, and Graph classes.
  *   2. Adjacency Representation: Space-efficient Adjacency List (std::unordered_map<string, vector<Edge>>).
@@ -15,7 +15,7 @@
  *   6. Route Testing & Comparison: RouteTester evaluating 8 scenarios under different risk conditions
  *      (e.g., cloudburst at Rudraprayag, gorge blockages, Chopta bypass, Mussoorie detour).
  *   7. Route Output: JsonExporter generating frontend-ready JSON (data/route_output.json) for Leaflet.
- * 
+ 
  * Compilation (C++17):
  *   g++ -std=c++17 safe_route_planner.cpp -o safe_route_planner
  *   ./safe_route_planner
