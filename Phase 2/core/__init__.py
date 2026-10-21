@@ -1,6 +1,6 @@
 """
 SlopeShield Core Package - OOP Domain Architecture
-Author: Jahnvi Verma (Member 3)
+Author: Anshika Gaur (Member 3)
 """
 from core.models import (
     BaseEntity,
