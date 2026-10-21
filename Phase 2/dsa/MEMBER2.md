@@ -331,8 +331,5 @@ python tests/test_route.py
 ```powershell
 g++ -std=c++17 src/route_engine.cpp -o route_engine
 ./route_engine
-```
-*Compiles the clean, standard C++17 OOP implementation and outputs the matching route table.*
 
----
 
