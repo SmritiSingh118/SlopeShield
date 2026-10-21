@@ -72,7 +72,7 @@ Member 2 acts as the **brain of safe navigation**:
 
 ---
 
-## 2. Words You Must Know First (Glossary)
+## 2. The glossary
 
 - **Graph $G = (V, E)$:** A mathematical structure consisting of vertices $V$ (our 11 Uttarakhand locations) connected by edges $E$ (our 14 highway segments).
 - **Adjacency List:** A memory-efficient graph representation where each vertex stores a list of its directly connected road segments. Storage complexity is $O(V + E)$, far superior to an $O(V^2)$ adjacency matrix for sparse mountain networks.
