@@ -206,3 +206,9 @@ The backend HTTP server provides the following endpoints:
 3. **Browser Local File Policy (CORS)**: When opening `frontend/index.html` via double-click (`file://` protocol), browsers block reading local JSON files. Running via `python main.py --serve --port 8000` or VS Code Live Server is required.
 4. **Road Blockages**: Physical road closures (e.g. from the Border Roads Organisation) are simulated dynamically via the interactive Hazard Simulator controls or `/api/simulate` endpoint rather than an automated live government webhook.
 
+## Authors
+
+- Smriti Singh
+- Jahnvi Verma
+- Anshika Gaur
+- Sanya Verma
