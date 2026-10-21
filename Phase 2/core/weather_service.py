@@ -2,7 +2,7 @@
 ================================================================================
 SlopeShield: Intelligent Landslide Risk & Safe Route System
 Live Weather Ingestion & Dynamic Pipeline (Member 3 Integration & Member 1 API)
-Authors: Anshika Gaur (Member 3) & Risk/API Lead (Member 1)
+Authors: Anshika Gaur (Member 3) & Smriti singh(Member 1)
 ================================================================================
 
 This module connects live meteorological APIs to SlopeShield's risk pipeline:
