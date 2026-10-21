@@ -2,7 +2,7 @@
 ================================================================================
 SlopeShield: Intelligent Landslide Risk & Safe Route System
 OOP Risk Scorer Hierarchy (Member 3 Architecture integrating Member 1 Logic)
-Author: Jahnvi Verma (Member 3)
+Author: Anshika Gaur (Member 3)
 ================================================================================
 
 This module encapsulates Member 1's scientific risk formulas in an OOP class hierarchy:
