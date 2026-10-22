@@ -178,8 +178,9 @@ File operations in `core/data_handlers.py` were built to prevent runtime crashes
    - Loads `locations_static.csv` $\rightarrow$ returns hydrated `Dict[str, Location]`.
    - Loads `road_network.csv` $\rightarrow$ returns hydrated `List[RoadSegment]`.
    - Loads `risk_weights.json` $\rightarrow$ returns configuration dictionary.
-   - Persists [risk_scores.csv](file:///c:/Users/asus/Downloads/jahnvi/data/risk_scores.csv), [risk_output.json](file:///c:/Users/asus/Downloads/jahnvi/data/risk_output.json), and [route_output.json](file:///c:/Users/asus/Downloads/jahnvi/data/route_output.json).
-
+   - Persists - `data/risk_scores.csv`
+              - `data/risk_output.json`
+              - `data/route_output.json`
 ---
 
 ## 6. Backend Integration
