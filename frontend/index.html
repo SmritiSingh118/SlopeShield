@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SlopeShield: landslide risk and safe routes for Uttarakhand</title>
+  <meta name="description" content="SlopeShield scores landslide risk along Uttarakhand's Char Dham roads and recommends the safest route between two places.">
+
+  <!-- Fonts (fallbacks are set in style.css, so the page still works offline) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Leaflet (map library) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero" id="top">
+    <svg class="contours" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      <path d="M1133 160 L1135 164 L1136 169 L1134 173 L1132 177 L1128 181 L1123 184 L1119 187 L1115 190 L1111 193 L1107 195 L1103 198 L1099 201 L1095 203 L1091 205 L1086 207 L1081 208 L1076 208 L1071 209 L1067 209 L1062 210 L1057 210 L1052 211 L1048 212 L1043 212 L1038 212 L1033 212 L1028 211 L1023 210 L1018 208 L1014 206 L1009 205 L1004 203 L999 202 L993 201 L987 199 L981 197 L977 194 L973 190 L970 186 L970 182 L971 177 L974 172 L977 168 L981 164 L985 160 L987 157 L989 154 L989 150 L989 147 L988 143 L988 139 L988 135 L989 132 L990 128 L993 125 L996 122 L1000 119 L1004 116 L1008 114 L1012 111 L1016 109 L1021 106 L1026 104 L1031 103 L1036 102 L1042 101 L1047 101 L1053 102 L1058 103 L1063 104 L1068 105 L1074 106 L1079 108 L1083 109 L1088 111 L1092 114 L1096 117 L1098 120 L1100 124 L1101 128 L1102 132 L1102 136 L1104 139 L1106 141 L1110 144 L1114 146 L1119 149 L1124 152 L1129 156Z"/>
+<path d="M1216 160 L1221 169 L1221 178 L1219 187 L1213 195 L1205 202 L1197 208 L1188 214 L1179 220 L1171 225 L1164 231 L1156 236 L1149 241 L1141 246 L1132 250 L1123 253 L1113 255 L1103 257 L1093 258 L1083 259 L1074 260 L1064 261 L1055 262 L1045 263 L1035 264 L1025 264 L1015 264 L1005 262 L996 259 L987 256 L978 253 L968 250 L958 247 L948 244 L936 241 L924 238 L913 234 L903 228 L895 221 L891 212 L890 203 L892 193 L898 184 L905 175 L912 167 L919 160 L924 153 L927 147 L928 141 L928 134 L926 127 L925 119 L925 111 L927 103 L931 96 L936 89 L943 83 L950 78 L958 73 L966 68 L974 63 L983 58 L992 53 L1001 49 L1011 45 L1022 43 L1033 42 L1044 42 L1055 44 L1066 45 L1077 48 L1087 50 L1097 53 L1107 55 L1117 58 L1126 62 L1134 67 L1141 74 L1146 81 L1150 89 L1152 97 L1153 104 L1155 111 L1158 118 L1162 123 L1169 128 L1178 133 L1188 138 L1199 144 L1209 152Z"/>
+<path d="M1299 160 L1306 173 L1307 187 L1303 200 L1295 212 L1283 223 L1270 233 L1256 241 L1244 250 L1232 258 L1220 266 L1209 274 L1198 282 L1186 289 L1173 295 L1159 300 L1144 303 L1129 305 L1114 307 L1100 308 L1086 310 L1071 311 L1057 313 L1043 315 L1028 316 L1013 317 L998 315 L983 313 L969 309 L955 304 L941 299 L927 295 L912 290 L896 286 L879 282 L862 277 L844 271 L830 262 L818 251 L811 239 L810 225 L814 210 L822 196 L832 183 L844 171 L854 160 L862 150 L866 141 L867 131 L866 121 L864 110 L863 98 L863 86 L866 75 L871 64 L879 54 L889 45 L900 37 L912 29 L924 21 L936 14 L949 6 L962 -1 L977 -7 L992 -12 L1008 -15 L1025 -17 L1042 -16 L1058 -15 L1074 -12 L1090 -8 L1105 -5 L1121 -1 L1136 3 L1150 8 L1164 14 L1176 21 L1187 30 L1194 41 L1200 53 L1203 65 L1205 77 L1207 87 L1211 96 L1218 104 L1229 112 L1242 119 L1257 127 L1273 137 L1288 148Z"/>
+<path d="M1382 160 L1391 178 L1393 196 L1387 213 L1376 229 L1361 244 L1343 257 L1325 268 L1308 279 L1292 290 L1277 301 L1262 312 L1247 322 L1231 332 L1214 340 L1195 346 L1176 351 L1156 354 L1136 356 L1116 358 L1097 359 L1079 362 L1060 364 L1040 367 L1020 369 L1000 369 L980 367 L961 364 L942 358 L923 352 L905 346 L886 340 L867 334 L845 329 L822 323 L799 316 L776 307 L756 296 L741 282 L732 265 L730 246 L735 227 L746 208 L760 190 L775 174 L788 160 L799 147 L805 134 L806 122 L805 108 L803 93 L801 78 L801 62 L804 46 L811 32 L822 18 L835 6 L850 -5 L866 -15 L882 -25 L898 -35 L915 -45 L933 -54 L952 -63 L973 -69 L994 -74 L1017 -76 L1039 -75 L1061 -73 L1082 -69 L1103 -65 L1124 -60 L1144 -55 L1164 -50 L1184 -43 L1202 -35 L1219 -25 L1232 -13 L1243 2 L1249 17 L1254 33 L1257 49 L1260 63 L1265 75 L1274 86 L1288 96 L1306 106 L1327 116 L1348 129 L1367 144Z"/>
+<path d="M1466 160 L1477 182 L1479 205 L1472 226 L1458 247 L1439 265 L1417 281 L1394 296 L1373 309 L1353 323 L1334 336 L1315 350 L1297 363 L1277 375 L1255 385 L1231 393 L1207 398 L1182 402 L1157 405 L1133 407 L1109 409 L1086 412 L1062 416 L1038 419 L1013 421 L988 421 L963 419 L938 414 L915 408 L892 400 L869 392 L846 384 L821 377 L794 371 L765 364 L736 355 L707 344 L683 330 L663 312 L652 291 L650 268 L656 244 L669 220 L687 198 L706 178 L723 160 L736 144 L743 128 L746 112 L744 95 L741 77 L738 57 L739 37 L743 18 L752 -0 L765 -17 L781 -32 L800 -46 L819 -59 L840 -71 L860 -83 L882 -96 L904 -108 L928 -118 L953 -127 L980 -132 L1008 -135 L1036 -134 L1064 -131 L1091 -126 L1117 -121 L1142 -115 L1168 -109 L1193 -102 L1217 -94 L1240 -84 L1261 -71 L1278 -56 L1291 -38 L1299 -18 L1305 2 L1308 21 L1312 39 L1319 54 L1331 67 L1348 80 L1370 92 L1396 106 L1422 121 L1447 139Z"/>
+<path d="M1549 160 L1562 187 L1564 214 L1556 240 L1539 264 L1516 286 L1490 305 L1463 323 L1437 339 L1413 355 L1391 372 L1369 388 L1346 404 L1322 418 L1296 430 L1268 439 L1238 446 L1209 451 L1179 454 L1150 456 L1121 459 L1093 463 L1064 467 L1035 470 L1006 473 L975 473 L945 471 L916 465 L888 458 L860 448 L833 439 L805 429 L775 421 L743 413 L708 404 L673 394 L639 381 L609 364 L586 343 L573 317 L570 289 L577 260 L593 232 L615 205 L637 181 L658 160 L673 140 L682 122 L685 102 L683 82 L679 60 L676 37 L676 13 L681 -11 L692 -33 L708 -53 L728 -71 L750 -87 L773 -102 L798 -117 L822 -132 L848 -147 L875 -161 L903 -174 L934 -184 L966 -191 L1000 -194 L1033 -193 L1066 -189 L1099 -184 L1130 -177 L1161 -170 L1191 -162 L1221 -154 L1251 -145 L1278 -133 L1303 -118 L1323 -99 L1339 -78 L1349 -54 L1356 -30 L1360 -7 L1365 14 L1373 33 L1387 49 L1407 64 L1434 78 L1465 95 L1497 113 L1526 135Z"/>
+<path d="M1632 160 L1647 191 L1650 222 L1641 253 L1621 281 L1594 307 L1563 329 L1532 350 L1502 369 L1474 388 L1447 407 L1422 426 L1395 444 L1367 461 L1337 475 L1304 486 L1270 494 L1235 499 L1200 503 L1166 506 L1133 509 L1100 513 L1067 518 L1033 522 L998 525 L963 525 L928 523 L894 516 L861 507 L828 496 L797 485 L764 474 L729 464 L691 455 L651 445 L610 433 L570 418 L536 398 L509 373 L493 344 L490 311 L499 277 L517 244 L542 213 L568 185 L592 160 L610 137 L621 115 L624 93 L622 69 L617 43 L614 16 L614 -12 L620 -39 L633 -65 L651 -88 L674 -109 L700 -128 L727 -146 L755 -163 L784 -181 L814 -198 L846 -215 L879 -230 L915 -241 L953 -249 L991 -253 L1031 -252 L1069 -247 L1107 -241 L1144 -233 L1179 -225 L1215 -216 L1250 -207 L1284 -196 L1316 -182 L1345 -164 L1369 -142 L1387 -117 L1399 -90 L1406 -62 L1411 -35 L1417 -10 L1427 12 L1443 30 L1467 48 L1498 65 L1534 84 L1571 106 L1605 131Z"/>
+<path d="M1715 160 L1732 195 L1736 231 L1725 266 L1702 299 L1672 328 L1637 353 L1601 377 L1566 399 L1534 420 L1504 442 L1475 464 L1445 485 L1413 504 L1378 520 L1340 533 L1301 541 L1261 547 L1222 552 L1183 555 L1145 559 L1107 564 L1069 569 L1030 574 L991 577 L951 578 L911 574 L871 567 L834 557 L797 545 L760 532 L723 519 L683 508 L640 497 L594 486 L547 472 L502 455 L462 432 L432 404 L414 370 L410 333 L420 294 L441 256 L469 220 L500 189 L527 160 L547 134 L559 109 L563 83 L560 56 L555 27 L551 -4 L552 -36 L559 -67 L573 -97 L594 -123 L620 -147 L650 -169 L681 -190 L713 -210 L746 -230 L780 -249 L816 -268 L855 -285 L896 -299 L939 -308 L983 -312 L1028 -311 L1072 -306 L1115 -298 L1157 -289 L1198 -280 L1239 -270 L1279 -259 L1318 -246 L1354 -231 L1387 -210 L1415 -186 L1435 -157 L1449 -125 L1457 -93 L1463 -62 L1470 -34 L1480 -10 L1499 12 L1526 32 L1562 51 L1603 73 L1646 98 L1685 127Z"/>
+<path d="M265 760 L264 764 L262 769 L261 773 L260 777 L258 781 L255 785 L252 788 L248 791 L244 794 L239 797 L235 799 L230 801 L226 804 L222 806 L218 809 L214 811 L209 813 L204 814 L199 815 L193 816 L188 816 L183 816 L177 817 L172 818 L166 819 L160 820 L153 822 L146 823 L139 823 L132 822 L126 819 L121 816 L118 811 L116 806 L116 800 L116 794 L116 789 L116 785 L116 781 L114 778 L112 774 L110 771 L107 768 L104 764 L103 760 L102 756 L102 752 L103 748 L104 744 L106 740 L107 736 L109 732 L110 728 L112 724 L115 720 L118 716 L122 712 L127 709 L132 707 L137 705 L143 703 L148 702 L154 700 L159 699 L165 697 L171 697 L177 696 L183 697 L189 698 L194 701 L199 704 L203 708 L206 711 L210 715 L213 718 L217 720 L221 721 L226 722 L233 722 L240 723 L247 724 L254 726 L260 729 L264 732 L267 737 L268 741 L268 746 L267 751 L266 756Z"/>
+<path d="M350 760 L347 769 L345 777 L343 786 L340 794 L336 802 L330 810 L324 817 L316 823 L307 828 L298 833 L289 838 L281 843 L273 848 L264 853 L256 857 L247 862 L238 866 L228 869 L217 870 L207 871 L196 872 L185 872 L175 873 L164 875 L152 878 L139 881 L126 883 L112 885 L97 886 L84 884 L72 879 L63 871 L56 862 L53 851 L52 840 L52 829 L53 819 L53 810 L52 802 L49 795 L45 789 L39 782 L34 775 L29 768 L26 760 L24 752 L24 744 L26 736 L28 728 L31 720 L34 712 L37 704 L41 696 L45 687 L50 679 L56 672 L64 665 L73 659 L83 654 L94 650 L105 646 L116 643 L127 640 L139 637 L150 635 L162 633 L174 633 L186 633 L198 636 L208 641 L218 648 L226 655 L233 663 L239 670 L246 676 L253 680 L262 682 L273 684 L286 684 L300 686 L314 688 L328 692 L339 697 L348 705 L353 713 L356 723 L356 732 L355 742 L352 751Z"/>
+<path d="M434 760 L431 773 L427 786 L424 798 L419 811 L413 823 L405 834 L395 845 L384 854 L371 863 L357 870 L344 877 L331 884 L319 892 L307 899 L294 906 L281 913 L266 919 L251 923 L236 926 L220 927 L204 928 L188 929 L172 930 L156 933 L138 936 L119 941 L99 945 L77 948 L56 948 L36 945 L18 938 L4 927 L-6 913 L-11 897 L-13 880 L-12 863 L-11 848 L-11 835 L-12 823 L-17 813 L-23 803 L-31 793 L-39 783 L-47 772 L-52 760 L-54 748 L-54 736 L-52 724 L-48 712 L-43 700 L-39 688 L-34 676 L-29 663 L-23 651 L-15 639 L-6 627 L6 617 L20 608 L35 601 L51 594 L68 589 L84 585 L101 580 L118 576 L135 572 L153 570 L171 569 L189 570 L206 575 L222 582 L237 592 L249 603 L259 614 L269 625 L279 634 L290 640 L303 643 L319 645 L339 647 L360 648 L381 652 L401 658 L419 666 L432 677 L440 690 L444 704 L444 718 L442 733 L438 747Z"/>
+<path d="M519 760 L514 777 L510 794 L505 811 L499 828 L491 844 L480 859 L467 873 L451 886 L434 897 L416 907 L399 916 L382 926 L365 936 L349 945 L332 955 L314 964 L295 971 L275 977 L254 981 L233 983 L212 984 L191 985 L169 987 L147 990 L124 995 L99 1001 L72 1007 L43 1011 L15 1011 L-13 1007 L-36 997 L-55 983 L-68 964 L-75 942 L-77 920 L-76 898 L-74 878 L-74 860 L-76 845 L-82 831 L-91 818 L-102 804 L-113 790 L-122 776 L-129 760 L-132 744 L-132 728 L-129 711 L-124 695 L-118 680 L-111 664 L-105 648 L-98 631 L-90 615 L-80 598 L-67 583 L-52 569 L-34 557 L-14 547 L8 539 L30 532 L53 526 L75 521 L98 515 L120 510 L144 506 L168 505 L192 507 L215 513 L237 523 L256 535 L272 550 L286 566 L299 580 L311 591 L326 600 L344 605 L366 607 L391 609 L419 611 L448 616 L475 623 L498 635 L516 649 L527 666 L532 685 L532 705 L529 724 L524 742Z"/>
+<path d="M604 760 L598 782 L592 803 L586 824 L579 845 L569 865 L556 884 L539 901 L519 917 L498 931 L475 944 L453 956 L432 967 L411 979 L391 992 L370 1004 L348 1015 L324 1024 L299 1031 L273 1036 L246 1038 L220 1040 L193 1041 L167 1043 L139 1048 L110 1054 L79 1062 L45 1069 L9 1074 L-27 1074 L-61 1069 L-90 1057 L-114 1038 L-130 1015 L-138 988 L-141 960 L-140 932 L-138 907 L-138 885 L-140 866 L-148 848 L-159 832 L-172 815 L-186 798 L-198 780 L-206 760 L-210 740 L-210 719 L-206 699 L-200 679 L-192 660 L-184 640 L-176 620 L-168 599 L-158 578 L-145 558 L-129 539 L-110 521 L-87 507 L-62 494 L-35 484 L-7 476 L21 468 L49 461 L77 454 L106 447 L135 443 L165 441 L195 444 L224 451 L251 463 L274 479 L295 498 L312 517 L328 535 L344 549 L363 559 L385 566 L412 569 L444 571 L479 574 L515 580 L549 589 L578 603 L600 622 L614 643 L620 667 L620 691 L616 715 L610 738Z"/>
+    </svg>
+
+    <nav class="nav wrap" aria-label="Main">
+      <a class="brand" href="#top">SlopeShield</a>
+      <ul>
+        <li><a href="#planner">Route planner</a></li>
+        <li><a href="#corridors">Corridors</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#team">Team</a></li>
+      </ul>
+    </nav>
+
+    <div class="hero-grid wrap">
+      <div class="hero-copy">
+        <h1>Choose the road that stays open.</h1>
+        <p class="hero-lede">
+          Mountain roads in Uttarakhand can close within hours of heavy rain.
+          SlopeShield scores landslide risk for every Char Dham town and road,
+          then finds the safest route between two places, even when that means a longer drive.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-light" href="#planner">Open the route planner</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+      </div>
+
+      <figure class="scenario" id="scenario" data-state="normal">
+        <svg viewBox="0 0 520 420" role="img" aria-labelledby="scenario-title scenario-desc">
+          <title id="scenario-title">Rishikesh to Kedarnath, before and after a cloudburst</title>
+          <desc id="scenario-desc">On a normal day the route runs through Rudraprayag. After a cloudburst makes Rudraprayag critical, the safest route switches to a longer road through Uttarkashi.</desc>
+
+          <!-- roads -->
+          <line class="edge e-su" x1="60"  y1="340" x2="110" y2="130"/>
+          <line class="edge e-tu" x1="110" y1="130" x2="330" y2="170"/>
+          <line class="edge e-rr" x1="60"  y1="340" x2="250" y2="290"/>
+          <line class="edge e-ru" x1="250" y1="290" x2="330" y2="170"/>
+          <line class="edge e-uk" x1="330" y1="170" x2="450" y2="70"/>
+
+          <!-- hazard ring -->
+          <circle class="pulse" cx="250" cy="290" r="16"/>
+
+          <!-- towns -->
+          <circle class="node" cx="60"  cy="340" r="9"/>
+          <circle class="node" cx="110" cy="130" r="9"/>
+          <circle class="node node-rudr" cx="250" cy="290" r="11"/>
+          <circle class="node" cx="330" cy="170" r="9"/>
+          <circle class="node" cx="450" cy="70"  r="9"/>
+
+          <text class="label" x="60"  y="372" text-anchor="middle">Rishikesh</text>
+          <text class="label" x="110" y="108" text-anchor="middle">Uttarkashi</text>
+          <text class="label" x="268" y="318" text-anchor="start">Rudraprayag</text>
+          <text class="label" x="348" y="190" text-anchor="start">Ukhimath</text>
+          <text class="label" x="450" y="48"  text-anchor="middle">Kedarnath</text>
+        </svg>
+        <figcaption>
+          <p class="scenario-text" id="scenario-text" aria-live="polite"></p>
+          <button class="link-btn" id="replay" type="button">Replay</button>
+        </figcaption>
+      </figure>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ============ ROUTE PLANNER ============ -->
+    <section class="section planner" id="planner" aria-labelledby="planner-h">
+      <div class="wrap">
+        <h2 id="planner-h">Plan a route</h2>
+        <p class="lede">Pick two places. SlopeShield draws the shortest road and the safest road, and shows what the safer choice costs you in kilometres.</p>
+
+        <div id="banner" class="banner" role="status" hidden></div>
+
+        <div class="planner-grid">
+
+          <aside class="panel" aria-label="Route controls">
+            <form id="route-form" class="panel-block" novalidate>
+              <div class="field">
+                <label for="from">From</label>
+                <select id="from" disabled><option>Loading places…</option></select>
+              </div>
+              <button class="swap" id="swap" type="button" aria-label="Swap start and destination" title="Swap">⇅</button>
+              <div class="field">
+                <label for="to">To</label>
+                <select id="to" disabled><option>Loading places…</option></select>
+              </div>
+              <button class="btn btn-primary" id="go" type="submit" disabled>Find safest route</button>
+            </form>
+
+            <div class="panel-block" id="result" aria-live="polite">
+              <p class="empty">Pick two places to compare the shortest and safest routes.</p>
+            </div>
+
+            <div class="panel-block" id="whatif">
+              <h3>Test a disaster</h3>
+              <p class="small">See how the safest route changes when a hazard appears. The hazard applies to the backend until you reset it.</p>
+              <div class="stack">
+                <button class="btn btn-outline" type="button" data-hazard="cloudburst">Cloudburst at Rudraprayag</button>
+                <button class="btn btn-outline" type="button" data-hazard="gorge">Block Rudraprayag–Chamoli road</button>
+                <button class="btn btn-quiet" type="button" id="reset">Reset to normal weather</button>
+              </div>
+              <p class="small active-hazards" id="active-hazards">No hazards active.</p>
+            </div>
+          </aside>
+
+          <div class="map-wrap">
+            <div id="map" role="application" aria-label="Map of landslide risk and routes in Uttarakhand"></div>
+            <div class="legend" aria-label="Map legend">
+              <p class="legend-title">Landslide risk</p>
+              <ul>
+                <li><span class="sw" style="background:var(--low)"></span>Low</li>
+                <li><span class="sw" style="background:var(--moderate)"></span>Moderate</li>
+                <li><span class="sw" style="background:var(--high)"></span>High</li>
+                <li><span class="sw" style="background:var(--critical)"></span>Critical</li>
+              </ul>
+              <p class="legend-title">Routes</p>
+              <ul>
+                <li><span class="line safe"></span>Safest</li>
+                <li><span class="line short"></span>Shortest</li>
+              </ul>
+            </div>
+            <p class="map-note">Lines connect towns directly and are not exact road geometry. Thin lines show each road's risk level.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CORRIDORS ============ -->
+    <section class="section corridors" id="corridors" aria-labelledby="corridors-h">
+      <div class="wrap">
+        <h2 id="corridors-h">Standard corridors</h2>
+        <p class="lede">Seven common pilgrimage and emergency journeys, compared under current conditions. Test a disaster in the planner and this table updates. Select a journey to see it on the map.</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Journey</th>
+                <th scope="col" class="num">Shortest</th>
+                <th scope="col" class="num">Safest</th>
+                <th scope="col" class="num">Extra distance</th>
+                <th scope="col" class="num">Risk reduced</th>
+                <th scope="col"><span class="sr-only">Action</span></th>
+              </tr>
+            </thead>
+            <tbody id="corridor-rows">
+              <tr><td colspan="6" class="empty">Loading corridors…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="section how" id="how" aria-labelledby="how-h">
+      <div class="wrap">
+        <h2 id="how-h">How SlopeShield picks a route</h2>
+
+        <ol class="steps">
+          <li>
+            <h3>Collect the facts</h3>
+            <p>Each of the 11 towns has its slope, elevation, soil type, rock strength, road condition and count of past landslides. Rainfall and humidity are added from weather data.</p>
+          </li>
+          <li>
+            <h3>Score the risk</h3>
+            <p>Terrain counts for 60% of the score and current weather for 40%. The result is a number from 0 to 100.</p>
+          </li>
+          <li>
+            <h3>Weigh every road</h3>
+            <p>The 14 roads form a graph. A risky road behaves like a longer road, and a critical road is blocked with a heavy penalty.</p>
+          </li>
+          <li>
+            <h3>Find the cheapest path</h3>
+            <p>Dijkstra's algorithm with a min-heap priority queue searches the graph twice: once for fewest kilometres, once for lowest risk.</p>
+          </li>
+        </ol>
+
+        <h3 class="scale-h">Risk levels</h3>
+        <div class="scale" role="img" aria-label="Risk scale: Low below 25, Moderate 25 to 50, High 50 to 75, Critical 75 and above">
+          <div style="background:var(--low)"><b>Low</b><span>under 25</span></div>
+          <div style="background:var(--moderate)"><b>Moderate</b><span>25 to 50</span></div>
+          <div style="background:var(--high)"><b>High</b><span>50 to 75</span></div>
+          <div style="background:var(--critical)"><b>Critical</b><span>75 and above</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TEAM ============ -->
+    <section class="section team" id="team" aria-labelledby="team-h">
+      <div class="wrap">
+        <h2 id="team-h">The Debug Divas</h2>
+        <dl class="people">
+          <div><dt>Smriti Singh</dt><dd>Team lead. Risk data and scoring.</dd></div>
+          <div><dt>Sanya Verma</dt><dd>Web interface and map.</dd></div>
+          <div><dt>Jahnvi Verma</dt><dd>Road graph and Dijkstra routing.</dd></div>
+          <div><dt>Anshika Gaur</dt><dd>Backend and integration.</dd></div>
+        </dl>
+        <p class="small">Mentor: Mr. Rohan Verma</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>SlopeShield, Team DSCPP-III-2026-T099</p>
+      <p>Department of Computer Science &amp; Engineering, Graphic Era (Deemed to be University)</p>
+      <p>Map data © OpenStreetMap contributors. Risk scores are a student project and not an official hazard warning.</p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
