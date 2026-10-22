@@ -34,7 +34,7 @@ I restructured the system from procedural scripts into a **4-Layer Object-Orient
                          HTTP / REST API │ (JSON over HTTP)
                                          ▼
 +-----------------------------------------------------------------------------------+
-|                    BACKEND & INTEGRATION FACADE (Member 3 - YOU)                   |
+|                    BACKEND & INTEGRATION FACADE (Member 3 )                        |
 |   SlopeShieldBackend  ·  HTTP APIServer  ·  Pipeline Controller  ·  Master CLI     |
 +-----------------------------------------------------------------------------------+
                          ▲                                   ▲
