@@ -287,6 +287,10 @@ In `backend/server.py`, I built a **zero-dependency, lightweight HTTP REST API s
   2. She can consume precomputed offline data directly from `data/route_output.json`.
 - I implemented an embedded test dashboard inside `backend/server.py` at `GET /` that demonstrates Leaflet map markers, colored polylines, and interactive detour buttons.
 
+### Python and C++ Module Integration
+
+The backend and core architecture described in this report are implemented in Python. The C++ route-engine implementation is maintained separately and can be compiled and tested independently. Runtime invocation of the C++ engine by the Python backend should not be assumed unless that integration is implemented and verified.
+
 ---
 
 ## 9. Files I Worked On
