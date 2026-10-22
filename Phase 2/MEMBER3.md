@@ -365,10 +365,10 @@ All components were verified using automated test suites and live runtime verifi
 
 ## 11. Current Status
 
-- **Member 3 Assigned Responsibilities:** **100% Complete and Fully Verified.**
-- **Backend & Core Engine:** 100% functional, operational, and running locally.
-- **REST API Server:** Running on `http://127.0.0.1:8000/`.
-
+- **Completed:** Documented OOP models, CSV/JSON handling, backend pipeline, and API functionality, subject to verification against the current repository.
+- **Testing:** See the latest output from `python main.py --test` for the verified test results.
+- **Weather data:** Mock data is used by default; live API functionality requires verification with a valid API key.
+- **Remaining limitations:** Refer to Section 12 for known limitations and future improvements.
 ---
 
 ## 12. Dependencies and Remaining Limitations
