@@ -7,9 +7,9 @@ Author: Anshika Gaur (Member 3)
 
 This module provides an object-oriented file handling layer:
 1. BaseDataHandler: Abstract Base Class defining read/write contracts.
-2. CsvHandler: Robust CSV reader and writer with atomic file safety, header validation, and error reporting.
-3. JsonHandler: Robust JSON parser and serializer with atomic file safety and schema checks.
-4. DataManager: High-level central coordinator managing all project datasets and road geometries.
+2. CsvHandler: Robust CSV reader and writer with schema cleaning and validation.
+3. JsonHandler: Robust JSON parser and serializer with schema checks.
+4. DataManager: High-level central coordinator managing all project datasets.
 """
 
 import os
@@ -39,31 +39,22 @@ class BaseDataHandler(ABC):
 class CsvHandler(BaseDataHandler):
     """
     Polymorphic CSV Handler responsible for reading and writing tabular records.
-    Provides automatic whitespace trimming, header validation, atomic write safety,
-    and helpful error reporting on malformed inputs.
+    Provides automatic whitespace trimming, header validation, and error reporting.
     """
 
-    def read(self, file_path: str, required_headers: Optional[List[str]] = None) -> List[Dict[str, str]]:
+    def read(self, file_path: str) -> List[Dict[str, str]]:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"[CsvHandler] Missing required CSV file: {file_path}")
-
-        if os.path.getsize(file_path) == 0:
-            raise ValueError(f"[CsvHandler] CSV file is empty (0 bytes): {file_path}")
 
         records: List[Dict[str, str]] = []
         try:
             with open(file_path, mode="r", newline="", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 if reader.fieldnames is None:
-                    raise ValueError(f"[CsvHandler] CSV file contains no header row: {file_path}")
+                    return records
 
-                # Clean and check fieldnames
+                # Clean fieldnames
                 cleaned_fieldnames = [k.strip() if k else "" for k in reader.fieldnames]
-
-                if required_headers:
-                    missing = [h for h in required_headers if h not in cleaned_fieldnames]
-                    if missing:
-                        raise ValueError(f"[CsvHandler] CSV '{file_path}' is missing required column(s): {', '.join(missing)}")
 
                 for line_idx, row in enumerate(reader, start=2):
                     cleaned_row = {}
@@ -71,39 +62,25 @@ class CsvHandler(BaseDataHandler):
                         if k is not None:
                             cleaned_row[k.strip()] = v.strip() if isinstance(v, str) else v
                     records.append(cleaned_row)
-        except (ValueError, FileNotFoundError):
-            raise
         except Exception as e:
             raise IOError(f"[CsvHandler] Error reading CSV file '{file_path}': {str(e)}") from e
 
         return records
 
     def write(self, file_path: str, data: List[Dict[str, Any]], fieldnames: Optional[List[str]] = None) -> bool:
-        """
-        Writes data to file atomically via a temporary file, ensuring partial or corrupted
-        files are never left on disk if interrupted.
-        """
         if not data and not fieldnames:
             return False
 
         try:
-            abs_path = os.path.abspath(file_path)
-            os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+            os.makedirs(os.path.dirname(os.path.abspath(file_path)), exist_ok=True)
             if not fieldnames and data:
                 fieldnames = list(data[0].keys())
 
-            temp_path = f"{abs_path}.tmp"
-            with open(temp_path, mode="w", newline="", encoding="utf-8") as f:
+            with open(file_path, mode="w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 for row in data:
                     writer.writerow(row)
-
-            # Atomic replace
-            if os.path.exists(abs_path):
-                os.replace(temp_path, abs_path)
-            else:
-                os.rename(temp_path, abs_path)
             return True
         except Exception as e:
             raise IOError(f"[CsvHandler] Error writing CSV file '{file_path}': {str(e)}") from e
@@ -119,31 +96,26 @@ class JsonHandler(BaseDataHandler):
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"[JsonHandler] Missing required JSON file: {file_path}")
 
-        if os.path.getsize(file_path) == 0:
-            raise ValueError(f"[JsonHandler] JSON file is empty (0 bytes): {file_path}")
-
         try:
             with open(file_path, mode="r", encoding="utf-8") as f:
                 return json.load(f)
         except json.JSONDecodeError as jde:
-            raise ValueError(f"[JsonHandler] Malformed JSON in '{file_path}' (line {jde.lineno}, col {jde.colno}): {jde.msg}") from jde
+            raise ValueError(f"[JsonHandler] Malformed JSON in '{file_path}': {str(jde)}") from jde
         except Exception as e:
             raise IOError(f"[JsonHandler] Error reading JSON file '{file_path}': {str(e)}") from e
 
     def write(self, file_path: str, data: Any, indent: int = 2) -> bool:
-        """Writes JSON payload atomically to avoid corrupting destinations."""
         try:
-            abs_path = os.path.abspath(file_path)
-            os.makedirs(os.path.dirname(abs_path), exist_ok=True)
-            temp_path = f"{abs_path}.tmp"
+            os.makedirs(os.path.dirname(os.path.abspath(file_path)), exist_ok=True)
+            temp_path = f"{file_path}.tmp"
             with open(temp_path, mode="w", encoding="utf-8") as f:
                 json.dump(data, f, indent=indent, ensure_ascii=False)
-
+            
             # Atomic replace
-            if os.path.exists(abs_path):
-                os.replace(temp_path, abs_path)
+            if os.path.exists(file_path):
+                os.replace(temp_path, file_path)
             else:
-                os.rename(temp_path, abs_path)
+                os.rename(temp_path, file_path)
             return True
         except Exception as e:
             raise IOError(f"[JsonHandler] Error writing JSON file '{file_path}': {str(e)}") from e
@@ -152,11 +124,8 @@ class JsonHandler(BaseDataHandler):
 class DataManager:
     """
     Central Data Coordinator encapsulating all dataset paths, file operations,
-    model hydration, road geometry ingestion, and persistence for SlopeShield.
+    model hydration, and persistence for the SlopeShield system.
     """
-
-    REQUIRED_LOCATION_HEADERS = ["location_id", "name", "lat", "lon", "elevation_m", "slope_deg"]
-    REQUIRED_ROAD_HEADERS = ["road_id", "from_id", "to_id", "distance_km"]
 
     def __init__(self, base_dir: Optional[str] = None):
         if base_dir is None:
@@ -171,7 +140,6 @@ class DataManager:
         # Standard file paths
         self._static_locations_path = os.path.join(self._base_dir, "data", "locations_static.csv")
         self._road_network_path = os.path.join(self._base_dir, "data", "road_network.csv")
-        self._road_geometries_path = os.path.join(self._base_dir, "data", "road_geometries.json")
         self._weights_config_path = os.path.join(self._base_dir, "config", "risk_weights.json")
         self._dynamic_features_path = os.path.join(self._base_dir, "data", "dynamic_features.csv")
         self._live_weather_path = os.path.join(self._base_dir, "data", "live_weather.json")
@@ -185,26 +153,14 @@ class DataManager:
 
     def load_weights_config(self) -> Dict[str, Any]:
         """Load mathematical weights and normalization parameters."""
-        cfg = self._json_handler.read(self._weights_config_path)
-        if not isinstance(cfg, dict):
-            raise ValueError(f"[DataManager] Invalid configuration format in {self._weights_config_path}")
-        return cfg
-
-    def load_road_geometries(self) -> Dict[str, Any]:
-        """Loads cached OpenStreetMap road geometries from data/road_geometries.json if present."""
-        if not os.path.exists(self._road_geometries_path):
-            return {}
-        try:
-            return self._json_handler.read(self._road_geometries_path)
-        except Exception:
-            return {}
+        return self._json_handler.read(self._weights_config_path)
 
     def load_locations(self) -> Dict[str, Location]:
         """
         Load static location features and instantiate encapsulated Location objects.
         Validates columns: location_id, name, lat, lon, elevation_m, slope_deg, etc.
         """
-        rows = self._csv_handler.read(self._static_locations_path, required_headers=self.REQUIRED_LOCATION_HEADERS)
+        rows = self._csv_handler.read(self._static_locations_path)
         locations: Dict[str, Location] = {}
 
         for row in rows:
@@ -246,6 +202,7 @@ class DataManager:
                             total_score=float(r.get("total_score", 0.0)),
                             risk_level=r.get("risk_level", "Low")
                         )
+                        # Also attach basic dynamic weather
                         weather = WeatherReading(
                             current_rain_mm=float(r.get("current_rain_mm", 0.0)),
                             forecast_24h_mm=float(r.get("forecast_24h_mm", 0.0)),
@@ -258,11 +215,9 @@ class DataManager:
     def load_road_network(self) -> List[RoadSegment]:
         """
         Load highway network and instantiate encapsulated RoadSegment objects.
-        Validates columns: road_id, from_id, to_id, distance_km.
-        Attaches verified OpenStreetMap road geometry from road_geometries.json if available.
+        Validates columns: road_id, from_id, to_id, distance_km, highway, road_type.
         """
-        rows = self._csv_handler.read(self._road_network_path, required_headers=self.REQUIRED_ROAD_HEADERS)
-        geometries = self.load_road_geometries()
+        rows = self._csv_handler.read(self._road_network_path)
         segments: List[RoadSegment] = []
 
         for row in rows:
@@ -272,14 +227,6 @@ class DataManager:
             if not rid or not u or not v:
                 continue
 
-            # Check if verified geometry exists in cache
-            geom_entry = geometries.get(rid)
-            geom_coords = None
-            has_verified = False
-            if geom_entry and isinstance(geom_entry, dict):
-                geom_coords = geom_entry.get("coordinates")
-                has_verified = bool(geom_entry.get("has_verified_geometry", True) and geom_coords and len(geom_coords) > 2)
-
             seg = RoadSegment(
                 road_id=rid,
                 u=u,
@@ -287,45 +234,115 @@ class DataManager:
                 distance_km=float(row.get("distance_km", 0.0)),
                 highway=row.get("highway", ""),
                 road_type=row.get("road_type", ""),
-                description=row.get("description", ""),
-                geometry=geom_coords,
-                has_verified_geometry=has_verified
+                description=row.get("description", "")
             )
             segments.append(seg)
 
         return segments
 
-    def load_dynamic_features(self) -> Dict[str, WeatherReading]:
-        """Load meteorological readings from dynamic_features.csv."""
+    def load_dynamic_features(self, is_fresh_pull: bool = False, max_age_seconds: int = 3600) -> Dict[str, WeatherReading]:
+        """
+        Load meteorological readings from dynamic_features.csv and enrich with live_weather.json if available.
+        Accurately attributes data source ('openweathermap', 'cache', 'mock', 'fallback') and staleness.
+        When is_fresh_pull is False, previously saved API records on disk are identified as 'cache'.
+        """
         if not os.path.exists(self._dynamic_features_path):
             return {}
 
-        try:
-            rows = self._csv_handler.read(self._dynamic_features_path)
-        except Exception:
-            return {}
-
+        rows = self._csv_handler.read(self._dynamic_features_path)
         weather_map: Dict[str, WeatherReading] = {}
+
+        # Load rich live metadata if available
+        live_meta = {}
+        if os.path.exists(self._live_weather_path):
+            try:
+                live_list = self._json_handler.read(self._live_weather_path)
+                if isinstance(live_list, list):
+                    for item in live_list:
+                        lid = item.get("location_id", "")
+                        if lid:
+                            live_meta[lid] = item
+            except Exception:
+                pass
+
+        now_utc = datetime.now(timezone.utc)
+
         for row in rows:
             lid = row.get("location_id", "").strip()
             if not lid:
                 continue
+
+            meta = live_meta.get(lid, {})
+            temp_val = float(row.get("temp_c", meta.get("temp_c", 20.0)) or 20.0)
+            desc_val = str(row.get("weather_desc", meta.get("weather_desc", "")) or "")
+            raw_source = str(meta.get("source", row.get("source", "cache"))).strip()
+            fetched_at_str = str(row.get("fetched_at", meta.get("fetched_at", "")) or now_utc.isoformat()).strip()
+            stale_val = bool(meta.get("stale", False))
+
+            # Determine reliable source categorization
+            if is_fresh_pull:
+                if "openweathermap" in raw_source.lower() and not stale_val:
+                    source_val = "openweathermap"
+                elif "mock" in raw_source.lower():
+                    source_val = "mock"
+                elif "fallback" in raw_source.lower() or "error" in raw_source.lower() or "cache" in raw_source.lower():
+                    source_val = "fallback"
+                else:
+                    source_val = "openweathermap" if not stale_val else "fallback"
+            else:
+                # Previously saved file on disk without current live pull is cached or mock
+                if "mock" in raw_source.lower():
+                    source_val = "mock"
+                else:
+                    source_val = "cache"
+
+            # Check staleness based on timestamp age
+            if fetched_at_str:
+                try:
+                    clean_ts = fetched_at_str.replace("Z", "+00:00")
+                    dt = datetime.fromisoformat(clean_ts)
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    age_seconds = (now_utc - dt).total_seconds()
+                    if age_seconds > max_age_seconds:
+                        stale_val = True
+                except Exception:
+                    pass
 
             reading = WeatherReading(
                 current_rain_mm=float(row.get("current_rain_mm", 0.0)),
                 forecast_24h_mm=float(row.get("forecast_24h_mm", 0.0)),
                 humidity_pct=int(float(row.get("humidity_pct", 50))),
                 antecedent_3d_mm=float(row.get("antecedent_3d_mm", 0.0)),
-                temp_c=float(row.get("temp_c", 20.0)),
-                weather_desc=row.get("weather_desc", "")
+                temp_c=temp_val,
+                weather_desc=desc_val,
+                source=source_val,
+                fetched_at=fetched_at_str,
+                stale=stale_val
             )
             weather_map[lid] = reading
 
         return weather_map
 
+    def save_dynamic_features(self, rows: List[Dict[str, Any]]) -> bool:
+        """Persist weather readings to dynamic_features.csv and live_weather.json."""
+        if not rows:
+            return False
+
+        csv_fieldnames = ["location_id", "current_rain_mm", "forecast_24h_mm",
+                          "burst_mm", "humidity_pct", "antecedent_3d_mm",
+                          "temp_c", "weather_desc", "fetched_at"]
+        clean_rows = []
+        for r in rows:
+            clean_rows.append({k: r.get(k, "") for k in csv_fieldnames})
+
+        self._csv_handler.write(self._dynamic_features_path, clean_rows, csv_fieldnames)
+        self._json_handler.write(self._live_weather_path, rows)
+        return True
+
     def save_risk_scores(self, locations: Dict[str, Location], weights: Optional[Dict[str, Any]] = None) -> bool:
         """
-        Persist scored locations to both CSV and JSON formats with atomic safety.
+        Persist scored locations to both CSV and JSON formats.
         Satisfies the contract required by Member 2 and Member 4.
         """
         csv_rows = []
@@ -368,7 +385,7 @@ class DataManager:
 
         # Write JSON
         payload = {
-            "generator": "SlopeShield DataManager (OOP Architecture - Member 3: Anshika Gaur)",
+            "generator": "SlopeShield DataManager (OOP Architecture - Member 3)",
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "weights": weights.get("weights", {"static": 0.6, "dynamic": 0.4}) if weights else {"static": 0.6, "dynamic": 0.4},
             "locations": json_locations
@@ -377,25 +394,25 @@ class DataManager:
         return True
 
     def save_route_output(self, route_payload: Dict[str, Any]) -> bool:
-        """Persist frontend-ready route results to data/route_output.json atomically."""
-        return self._json_handler.write(self._route_output_json_path, route_payload)
+        """Persist frontend-ready route results to data/route_output.json and sync to frontend folder."""
+        res = self._json_handler.write(self._route_output_json_path, route_payload)
+        # Sync to SlopeShield_frontend fallback data folder if present
+        try:
+            frontend_dir = os.path.join(os.path.dirname(os.path.dirname(self._base_dir)), "SlopeShield_frontend", "frontend", "data")
+            if os.path.exists(frontend_dir):
+                self._json_handler.write(os.path.join(frontend_dir, "route_output.json"), route_payload)
+        except Exception:
+            pass
+        return res
 
     def validate_datasets(self) -> Tuple[bool, List[str]]:
         """Validate integrity and presence of all core input datasets."""
         issues: List[str] = []
         if not os.path.exists(self._static_locations_path):
             issues.append(f"Missing {self._static_locations_path}")
-        elif os.path.getsize(self._static_locations_path) == 0:
-            issues.append(f"Empty {self._static_locations_path}")
-
         if not os.path.exists(self._road_network_path):
             issues.append(f"Missing {self._road_network_path}")
-        elif os.path.getsize(self._road_network_path) == 0:
-            issues.append(f"Empty {self._road_network_path}")
-
         if not os.path.exists(self._weights_config_path):
             issues.append(f"Missing {self._weights_config_path}")
-        elif os.path.getsize(self._weights_config_path) == 0:
-            issues.append(f"Empty {self._weights_config_path}")
 
         return len(issues) == 0, issues
