@@ -7,9 +7,8 @@ Team: The Debug Divas
 ================================================================================
 
 Usage:
-  python main.py                     # Run complete end-to-end pipeline (mock weather)
-  python main.py --live              # Run pipeline with live OpenWeatherMap weather
-  python main.py --serve             # Launch REST API server & frontend on port 8000
+  python main.py                     # Run complete end-to-end pipeline & export outputs
+  python main.py --serve             # Launch REST API server & interactive frontend on port 8000
   python main.py --serve --port 8080 # Launch on custom port
   python main.py --route --source RISH --dest BADR   # Query on-demand route
   python main.py --simulate --target RUDR --score 77.08 --level Critical # What-If analysis
@@ -40,26 +39,38 @@ def print_banner():
     print(banner)
 
 
-def run_pipeline(backend: SlopeShieldBackend, mode: str = "mock"):
+def run_pipeline(backend: SlopeShieldBackend, use_mock: bool = True, api_key: str = ""):
     """Executes the complete integration pipeline from raw inputs to frontend JSON."""
-    print("[1/4] Initializing OOP System & Data Handlers (Member 3: Anshika Gaur)...")
+    print("[1/4] Initializing OOP System & Data Handlers...")
     backend.initialize()
-    print(f"      Loaded {len(backend.locations)} locations and {len(backend.roads)} road corridors (with OSM geometry).")
+    print(f"      Loaded {len(backend.locations)} locations and {len(backend.roads)} road corridors.")
 
-    print(f"\n[2/4] Executing Environmental Risk Pipeline (Member 1 - Mode: {mode.upper()})...")
-    res = backend.refresh_weather_and_scores(mode=mode)
-    print(f"      Weather Source  : {res.get('weather_source')} (Live Verified: {res.get('is_live_verified')})")
-    print(f"      Status Message  : {res.get('weather_message')}")
-    print(f"      Scored Locations: {res['scored_count']} -> data/risk_scores.csv, data/risk_output.json")
+    print("\n[2/4] Executing Environmental Risk Pipeline (Member 1)...")
+    res = backend.refresh_weather_and_scores(use_mock=use_mock, api_key=api_key)
+    ds = res.get("data_source", "mock")
+    if ds == "live_openweathermap":
+        mode_desc = "Live OpenWeatherMap API (All 11 locations live)"
+    elif ds == "mixed":
+        fs = res.get("freshness_summary", {})
+        mode_desc = f"Mixed (Live: {fs.get('live_count', 0)}, Cache/Fallback: {fs.get('fallback_count', 0) + fs.get('cache_count', 0)})"
+    elif ds == "cache":
+        mode_desc = "Previously Saved Cache Data"
+    elif ds == "fallback":
+        mode_desc = "Fallback Weather Data (API unavailable)"
+    else:
+        mode_desc = "Mock Environmental Data (Viva Safe)"
+    print(f"      Source: {mode_desc}")
+    print(f"      Status: is_live={res.get('is_live', False)}, system_status={res.get('system_status', ds)}")
+    print(f"      Successfully scored {res['scored_count']} locations -> data/risk_scores.csv, data/risk_output.json")
     print(f"      {'ID':5s} | {'Static':7s} | {'Dynamic':7s} | {'Total':6s} | {'Hazard Level'}")
     print("      " + "-" * 48)
     for loc in backend.get_locations_summary():
         print(f"      {loc['location_id']:5s} | {loc['static_score']:7.1f} | {loc['dynamic_score']:7.1f} | {loc['risk_score']:6.1f} | {loc['risk_level']}")
 
-    print("\n[3/4] Rebuilding Road Graph with Risk-Weighted Edges (Member 2: Jahnvi Verma)...")
+    print("\n[3/4] Rebuilding Road Graph with Risk-Weighted Edges (Member 2)...")
     print("      Applied alpha multiplier (1.5) and Critical danger barrier penalty (1000.0).")
 
-    print("\n[4/4] Executing Dijkstra Route Engine & Generating Frontend JSON (Members 2 & 4)...")
+    print("\n[4/4] Executing Dijkstra Route Engine & Generating Frontend JSON...")
     routes_payload = backend.plan_all_standard_corridors()
     print(f"      Successfully generated: data/route_output.json ({len(routes_payload['routes'])} standard corridors)")
 
@@ -85,11 +96,11 @@ def run_pipeline(backend: SlopeShieldBackend, mode: str = "mock"):
     print("\n>> PIPELINE EXECUTION COMPLETED SUCCESSFULLY!\n")
 
 
-def query_route(backend: SlopeShieldBackend, source: str, dest: str, mode: str = "safest"):
+def query_route(backend: SlopeShieldBackend, source: str, dest: str, mode: str = "safest", use_mock: bool = True, api_key: str = ""):
     """Query a specific on-demand route."""
     if not backend.is_initialized:
         backend.initialize()
-        backend.refresh_weather_and_scores(mode="mock")
+        backend.refresh_weather_and_scores(use_mock=use_mock, api_key=api_key)
 
     comp = backend.compare_route(source, dest)
     target_route = comp.safest if mode == "safest" else comp.shortest
@@ -97,17 +108,10 @@ def query_route(backend: SlopeShieldBackend, source: str, dest: str, mode: str =
     print(f"\n=======================================================")
     print(f" ROUTE QUERY: {source} -> {dest} (Mode: {mode.upper()})")
     print(f"=======================================================")
-    if not target_route.found:
-        print(f"Route Status     : NOT FOUND")
-        print(f"Error            : {target_route.error_message}")
-        print(f"=======================================================\n")
-        return
-
     print(f"Selected Path    : {' -> '.join(target_route.path)}")
     print(f"Total Distance   : {target_route.total_distance_km:.1f} km")
     print(f"Total Risk Cost  : {target_route.total_risk_cost:.1f}")
     print(f"Max Hazard Level : {target_route.max_risk_level}")
-    print(f"Geometry Verified: {target_route.has_verified_geometry} ({len(target_route.coordinates)} coordinates)")
     print(f"Recommendation   : {comp.recommendation}")
     print(f"=======================================================\n")
 
@@ -142,10 +146,10 @@ def run_tests():
 
 def main():
     parser = argparse.ArgumentParser(description="SlopeShield Intelligent Landslide Risk & Safe Route System")
+    parser.add_argument("--live", action="store_true", help="Fetch and run with live OpenWeatherMap weather readings")
+    parser.add_argument("--api-key", type=str, default=os.environ.get("OWM_API_KEY", ""), help="OpenWeatherMap API key (defaults to OWM_API_KEY env var)")
     parser.add_argument("--serve", action="store_true", help="Launch the REST API server and interactive map dashboard")
     parser.add_argument("--port", type=int, default=8000, help="Port to run the REST API server on (default: 8000)")
-    parser.add_argument("--live", action="store_true", help="Attempt live weather fetching via OpenWeatherMap API")
-    parser.add_argument("--mock", action="store_true", help="Force deterministic mock monsoon weather (default)")
     parser.add_argument("--route", action="store_true", help="Query route between two points")
     parser.add_argument("--source", type=str, default="RISH", help="Source location ID (e.g., RISH)")
     parser.add_argument("--dest", type=str, default="BADR", help="Destination location ID (e.g., BADR)")
@@ -163,27 +167,29 @@ def main():
     if args.test:
         sys.exit(run_tests())
 
+    api_key = args.api_key.strip()
+    use_mock = not (args.live or bool(api_key))
+
     backend = SlopeShieldBackend(BASE_DIR)
-    weather_mode = "live" if args.live else "mock"
 
     if args.serve:
-        run_server(port=args.port, base_dir=BASE_DIR)
+        run_server(port=args.port, base_dir=BASE_DIR, use_mock=use_mock, api_key=api_key)
         return
 
     if args.route:
-        query_route(backend, args.source, args.dest, args.mode)
+        query_route(backend, args.source, args.dest, args.mode, use_mock=use_mock, api_key=api_key)
         return
 
     if args.simulate:
         backend.initialize()
-        backend.refresh_weather_and_scores(mode=weather_mode)
+        backend.refresh_weather_and_scores(use_mock=use_mock, api_key=api_key)
         print(f"Simulating hazard on {args.type} {args.target} (Score: {args.score}, Level: {args.level})...")
         backend.simulate_hazard(args.type, args.target, args.score, args.level)
-        query_route(backend, "RISH", "KEDN", "safest")
+        query_route(backend, "RISH", "KEDN", "safest", use_mock=use_mock, api_key=api_key)
         return
 
     # Default action: run full pipeline end-to-end
-    run_pipeline(backend, mode=weather_mode)
+    run_pipeline(backend, use_mock=use_mock, api_key=api_key)
 
 
 if __name__ == "__main__":
