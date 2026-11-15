@@ -1,0 +1,15 @@
+road_id,from_id,to_id,distance_km,highway,road_type,description
+R01,RISH,DEHR,45.0,NH-7,National Highway,Gateway twin-city link via Haridwar-Rishikesh expressway corridor
+R02,DEHR,MUSS,34.0,Mussoorie Rd,State Highway,Foothill climbing arterial from Doon valley to Mussoorie ridge
+R03,MUSS,UTTK,135.0,NH-707A,National Highway,High-ridge bypass route via Suwakholi and Chamba-Dharasu bend
+R04,RISH,UTTK,145.0,NH-34,National Highway,Direct Gangotri corridor via Narendra Nagar Chamba and Bhagirathi valley
+R05,UTTK,GANG,99.0,NH-34,National Highway,Upper Bhagirathi highway via Bhatwari and Harsil to Gangotri shrine
+R06,UTTK,RUDR,130.0,NH-107A,Regional Corridor,Transverse Garhwal cross-link connecting Bhagirathi and Mandakini valleys via Tehri-Ghansali-Tilwara
+R07,RISH,RUDR,140.0,NH-7,National Highway,Primary Char Dham spine along Alaknanda river via Devprayag and Srinagar
+R08,RUDR,UKHI,42.0,NH-107,National Highway,Mandakini valley highway from Rudraprayag to Kund and Ukhimath
+R09,UKHI,KEDN,51.0,NH-107,Pilgrim Corridor,Kedarnath shrine ascent route via Guptkashi Sonprayag and Gaurikund
+R10,RUDR,CHAM,68.0,NH-7,National Highway,Alaknanda gorge corridor connecting Rudraprayag to Karnaprayag and Chamoli
+R11,UKHI,CHAM,65.0,NH-107A,Mountain Pass,Scenic high-altitude bypass linking Mandakini and Alaknanda valleys via Chopta pass and Gopeshwar
+R12,CHAM,BADR,96.0,NH-7,National Highway,Upper Alaknanda highway via Pipalkoti and Joshimath to Badrinath shrine
+R13,CHAM,MALP,260.0,NH-107B / NH-9,Border Highway,Eastern Kumaon corridor linking Garhwal with Pithoragarh Dharchula and Malpa sector
+R14,UTTK,UKHI,125.0,SH-37,Mountain Corridor,Transverse bypass connecting Bhagirathi and Mandakini basins via Ghansali-Chirbatiya-Mayali-Kund

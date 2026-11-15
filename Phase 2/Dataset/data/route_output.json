@@ -1,0 +1,1563 @@
+{
+  "metadata": {
+    "system": "SlopeShield Intelligent Safe Route Engine",
+    "author": "The Debug Divas (Integration: Jahnvi Verma - Member 3)",
+    "generated_at": "2026-11-01T16:07:35.589440+00:00",
+    "algorithm": "Dijkstra with custom Min-Heap Priority Queue (CLRS)",
+    "weight_formula": "distance * (1 + 1.5 * edge_risk/100) + critical_penalty",
+    "parameters": {
+      "alpha": 1.5,
+      "critical_penalty": 1000.0
+    }
+  },
+  "all_locations": {
+    "RISH": {
+      "location_id": "RISH",
+      "name": "Rishikesh",
+      "lat": 30.0869,
+      "lon": 78.2676,
+      "elevation_m": 372.0,
+      "slope_deg": 12.0,
+      "soil_type": "sandy",
+      "landuse": "non-forest",
+      "lithology_factor": 0.3,
+      "historical_count": 2,
+      "road_condition": "good",
+      "risk_score": 20.79,
+      "risk_level": "Low",
+      "static_score": 29.72,
+      "dynamic_score": 7.4,
+      "weather": {
+        "current_rain_mm": 0.0,
+        "forecast_24h_mm": 0.49,
+        "humidity_pct": 90,
+        "antecedent_3d_mm": 0.27,
+        "temp_c": 20.4,
+        "weather_desc": "clear sky",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:19.025614+00:00",
+        "last_updated": "2026-11-01T16:07:19.025614+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:19.025614+00:00"
+    },
+    "DEHR": {
+      "location_id": "DEHR",
+      "name": "Dehradun",
+      "lat": 30.3165,
+      "lon": 78.0322,
+      "elevation_m": 640.0,
+      "slope_deg": 15.0,
+      "soil_type": "loamy",
+      "landuse": "non-forest",
+      "lithology_factor": 0.4,
+      "historical_count": 3,
+      "road_condition": "good",
+      "risk_score": 25.25,
+      "risk_level": "Moderate",
+      "static_score": 37.21,
+      "dynamic_score": 7.3,
+      "weather": {
+        "current_rain_mm": 0.0,
+        "forecast_24h_mm": 0.66,
+        "humidity_pct": 88,
+        "antecedent_3d_mm": 0.23,
+        "temp_c": 18.9,
+        "weather_desc": "clear sky",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:20.757706+00:00",
+        "last_updated": "2026-11-01T16:07:20.757706+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:20.757706+00:00"
+    },
+    "MUSS": {
+      "location_id": "MUSS",
+      "name": "Mussoorie",
+      "lat": 30.4598,
+      "lon": 78.0644,
+      "elevation_m": 2005.0,
+      "slope_deg": 35.0,
+      "soil_type": "loamy",
+      "landuse": "open-forest",
+      "lithology_factor": 0.7,
+      "historical_count": 12,
+      "road_condition": "moderate",
+      "risk_score": 33.12,
+      "risk_level": "Moderate",
+      "static_score": 49.8,
+      "dynamic_score": 8.09,
+      "weather": {
+        "current_rain_mm": 0.0,
+        "forecast_24h_mm": 2.49,
+        "humidity_pct": 89,
+        "antecedent_3d_mm": 0.86,
+        "temp_c": 9.8,
+        "weather_desc": "clear sky",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:22.357539+00:00",
+        "last_updated": "2026-11-01T16:07:22.357539+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:22.357539+00:00"
+    },
+    "RUDR": {
+      "location_id": "RUDR",
+      "name": "Rudraprayag",
+      "lat": 30.284,
+      "lon": 78.98,
+      "elevation_m": 895.0,
+      "slope_deg": 38.0,
+      "soil_type": "loamy",
+      "landuse": "non-forest",
+      "lithology_factor": 0.8,
+      "historical_count": 42,
+      "road_condition": "poor",
+      "risk_score": 48.83,
+      "risk_level": "Moderate",
+      "static_score": 74.87,
+      "dynamic_score": 9.76,
+      "weather": {
+        "current_rain_mm": 0.39,
+        "forecast_24h_mm": 5.71,
+        "humidity_pct": 90,
+        "antecedent_3d_mm": 3.22,
+        "temp_c": 17.9,
+        "weather_desc": "light rain",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:24.061682+00:00",
+        "last_updated": "2026-11-01T16:07:24.061682+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:24.061682+00:00"
+    },
+    "UKHI": {
+      "location_id": "UKHI",
+      "name": "Ukhimath",
+      "lat": 30.51,
+      "lon": 79.09,
+      "elevation_m": 1311.0,
+      "slope_deg": 32.0,
+      "soil_type": "loamy",
+      "landuse": "open-forest",
+      "lithology_factor": 0.75,
+      "historical_count": 18,
+      "road_condition": "moderate",
+      "risk_score": 35.48,
+      "risk_level": "Moderate",
+      "static_score": 51.56,
+      "dynamic_score": 11.35,
+      "weather": {
+        "current_rain_mm": 0.31,
+        "forecast_24h_mm": 11.81,
+        "humidity_pct": 81,
+        "antecedent_3d_mm": 4.95,
+        "temp_c": 13.0,
+        "weather_desc": "light rain",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:25.601695+00:00",
+        "last_updated": "2026-11-01T16:07:25.601695+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:25.601695+00:00"
+    },
+    "KEDN": {
+      "location_id": "KEDN",
+      "name": "Kedarnath",
+      "lat": 30.7346,
+      "lon": 79.0669,
+      "elevation_m": 3553.0,
+      "slope_deg": 40.0,
+      "soil_type": "silt",
+      "landuse": "scrub",
+      "lithology_factor": 0.85,
+      "historical_count": 25,
+      "road_condition": "poor",
+      "risk_score": 38.94,
+      "risk_level": "Moderate",
+      "static_score": 61.44,
+      "dynamic_score": 5.2,
+      "weather": {
+        "current_rain_mm": 0.0,
+        "forecast_24h_mm": 0.0,
+        "humidity_pct": 65,
+        "antecedent_3d_mm": 0.01,
+        "temp_c": -6.1,
+        "weather_desc": "broken clouds",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:27.311539+00:00",
+        "last_updated": "2026-11-01T16:07:27.311539+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:27.311539+00:00"
+    },
+    "CHAM": {
+      "location_id": "CHAM",
+      "name": "Chamoli",
+      "lat": 30.42,
+      "lon": 79.33,
+      "elevation_m": 1400.0,
+      "slope_deg": 33.0,
+      "soil_type": "loamy",
+      "landuse": "open-forest",
+      "lithology_factor": 0.7,
+      "historical_count": 20,
+      "road_condition": "moderate",
+      "risk_score": 35.92,
+      "risk_level": "Moderate",
+      "static_score": 52.14,
+      "dynamic_score": 11.58,
+      "weather": {
+        "current_rain_mm": 0.72,
+        "forecast_24h_mm": 11.55,
+        "humidity_pct": 81,
+        "antecedent_3d_mm": 6.12,
+        "temp_c": 13.8,
+        "weather_desc": "light rain",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:28.941872+00:00",
+        "last_updated": "2026-11-01T16:07:28.941872+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:28.941872+00:00"
+    },
+    "BADR": {
+      "location_id": "BADR",
+      "name": "Badrinath",
+      "lat": 30.7433,
+      "lon": 79.4938,
+      "elevation_m": 3100.0,
+      "slope_deg": 37.0,
+      "soil_type": "silt",
+      "landuse": "scrub",
+      "lithology_factor": 0.8,
+      "historical_count": 15,
+      "road_condition": "poor",
+      "risk_score": 35.71,
+      "risk_level": "Moderate",
+      "static_score": 55.51,
+      "dynamic_score": 6.0,
+      "weather": {
+        "current_rain_mm": 0.0,
+        "forecast_24h_mm": 0.0,
+        "humidity_pct": 75,
+        "antecedent_3d_mm": 0.01,
+        "temp_c": -4.1,
+        "weather_desc": "broken clouds",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:30.589858+00:00",
+        "last_updated": "2026-11-01T16:07:30.589858+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:30.589858+00:00"
+    },
+    "UTTK": {
+      "location_id": "UTTK",
+      "name": "Uttarkashi",
+      "lat": 30.7298,
+      "lon": 78.4434,
+      "elevation_m": 1158.0,
+      "slope_deg": 30.0,
+      "soil_type": "loamy",
+      "landuse": "non-forest",
+      "lithology_factor": 0.65,
+      "historical_count": 16,
+      "road_condition": "moderate",
+      "risk_score": 36.4,
+      "risk_level": "Moderate",
+      "static_score": 55.09,
+      "dynamic_score": 8.36,
+      "weather": {
+        "current_rain_mm": 0.0,
+        "forecast_24h_mm": 4.62,
+        "humidity_pct": 82,
+        "antecedent_3d_mm": 1.55,
+        "temp_c": 10.7,
+        "weather_desc": "clear sky",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:32.244940+00:00",
+        "last_updated": "2026-11-01T16:07:32.244940+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:32.244940+00:00"
+    },
+    "GANG": {
+      "location_id": "GANG",
+      "name": "Gangotri",
+      "lat": 30.9943,
+      "lon": 78.9398,
+      "elevation_m": 3048.0,
+      "slope_deg": 36.0,
+      "soil_type": "silt",
+      "landuse": "scrub",
+      "lithology_factor": 0.75,
+      "historical_count": 10,
+      "road_condition": "poor",
+      "risk_score": 33.69,
+      "risk_level": "Moderate",
+      "static_score": 52.43,
+      "dynamic_score": 5.57,
+      "weather": {
+        "current_rain_mm": 0.0,
+        "forecast_24h_mm": 0.73,
+        "humidity_pct": 66,
+        "antecedent_3d_mm": 0.26,
+        "temp_c": 2.0,
+        "weather_desc": "few clouds",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:33.868189+00:00",
+        "last_updated": "2026-11-01T16:07:33.868189+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:33.868189+00:00"
+    },
+    "MALP": {
+      "location_id": "MALP",
+      "name": "Malpa",
+      "lat": 29.996,
+      "lon": 80.82,
+      "elevation_m": 2000.0,
+      "slope_deg": 42.0,
+      "soil_type": "loamy",
+      "landuse": "non-forest",
+      "lithology_factor": 0.9,
+      "historical_count": 22,
+      "road_condition": "poor",
+      "risk_score": 44.63,
+      "risk_level": "Moderate",
+      "static_score": 69.88,
+      "dynamic_score": 6.76,
+      "weather": {
+        "current_rain_mm": 0.0,
+        "forecast_24h_mm": 2.05,
+        "humidity_pct": 74,
+        "antecedent_3d_mm": 0.98,
+        "temp_c": 1.0,
+        "weather_desc": "light snow",
+        "source": "openweathermap",
+        "fetched_at": "2026-11-01T16:07:35.564700+00:00",
+        "last_updated": "2026-11-01T16:07:35.564700+00:00",
+        "stale": false,
+        "freshness": "fresh"
+      },
+      "weather_source": "openweathermap",
+      "weather_stale": false,
+      "weather_fetched_at": "2026-11-01T16:07:35.564700+00:00"
+    }
+  },
+  "routes": {
+    "RISH_to_BADR": {
+      "source_id": "RISH",
+      "dest_id": "BADR",
+      "is_identical": true,
+      "distance_diff_km": 0.0,
+      "cost_diff": 0.0,
+      "risk_reduction_pct": 0.0,
+      "recommendation": "The shortest path is already the safest path (304.0 km, risk cost: 471.88).",
+      "shortest_route": {
+        "source_id": "RISH",
+        "dest_id": "BADR",
+        "mode": "shortest",
+        "found": true,
+        "path": [
+          "RISH",
+          "RUDR",
+          "CHAM",
+          "BADR"
+        ],
+        "path_names": [
+          "Rishikesh",
+          "Rudraprayag",
+          "Chamoli",
+          "Badrinath"
+        ],
+        "coordinates": [
+          [
+            30.0869,
+            78.2676
+          ],
+          [
+            30.284,
+            78.98
+          ],
+          [
+            30.42,
+            79.33
+          ],
+          [
+            30.7433,
+            79.4938
+          ]
+        ],
+        "total_distance_km": 304.0,
+        "total_risk_cost": 471.88,
+        "average_risk_score": 37.67,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R07",
+            "from_id": "RISH",
+            "from_name": "Rishikesh",
+            "to_id": "RUDR",
+            "to_name": "Rudraprayag",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 140.0,
+            "edge_risk_score": 34.81,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.522,
+            "risk_cost": 213.08,
+            "from_coords": [
+              30.0869,
+              78.2676
+            ],
+            "to_coords": [
+              30.284,
+              78.98
+            ]
+          },
+          {
+            "road_id": "R10",
+            "from_id": "RUDR",
+            "from_name": "Rudraprayag",
+            "to_id": "CHAM",
+            "to_name": "Chamoli",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 68.0,
+            "edge_risk_score": 42.38,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.636,
+            "risk_cost": 111.25,
+            "from_coords": [
+              30.284,
+              78.98
+            ],
+            "to_coords": [
+              30.42,
+              79.33
+            ]
+          },
+          {
+            "road_id": "R12",
+            "from_id": "CHAM",
+            "from_name": "Chamoli",
+            "to_id": "BADR",
+            "to_name": "Badrinath",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 96.0,
+            "edge_risk_score": 35.81,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.537,
+            "risk_cost": 147.55,
+            "from_coords": [
+              30.42,
+              79.33
+            ],
+            "to_coords": [
+              30.7433,
+              79.4938
+            ]
+          }
+        ]
+      },
+      "safest_route": {
+        "source_id": "RISH",
+        "dest_id": "BADR",
+        "mode": "safest",
+        "found": true,
+        "path": [
+          "RISH",
+          "RUDR",
+          "CHAM",
+          "BADR"
+        ],
+        "path_names": [
+          "Rishikesh",
+          "Rudraprayag",
+          "Chamoli",
+          "Badrinath"
+        ],
+        "coordinates": [
+          [
+            30.0869,
+            78.2676
+          ],
+          [
+            30.284,
+            78.98
+          ],
+          [
+            30.42,
+            79.33
+          ],
+          [
+            30.7433,
+            79.4938
+          ]
+        ],
+        "total_distance_km": 304.0,
+        "total_risk_cost": 471.88,
+        "average_risk_score": 37.67,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R07",
+            "from_id": "RISH",
+            "from_name": "Rishikesh",
+            "to_id": "RUDR",
+            "to_name": "Rudraprayag",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 140.0,
+            "edge_risk_score": 34.81,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.522,
+            "risk_cost": 213.08,
+            "from_coords": [
+              30.0869,
+              78.2676
+            ],
+            "to_coords": [
+              30.284,
+              78.98
+            ]
+          },
+          {
+            "road_id": "R10",
+            "from_id": "RUDR",
+            "from_name": "Rudraprayag",
+            "to_id": "CHAM",
+            "to_name": "Chamoli",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 68.0,
+            "edge_risk_score": 42.38,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.636,
+            "risk_cost": 111.25,
+            "from_coords": [
+              30.284,
+              78.98
+            ],
+            "to_coords": [
+              30.42,
+              79.33
+            ]
+          },
+          {
+            "road_id": "R12",
+            "from_id": "CHAM",
+            "from_name": "Chamoli",
+            "to_id": "BADR",
+            "to_name": "Badrinath",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 96.0,
+            "edge_risk_score": 35.81,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.537,
+            "risk_cost": 147.55,
+            "from_coords": [
+              30.42,
+              79.33
+            ],
+            "to_coords": [
+              30.7433,
+              79.4938
+            ]
+          }
+        ]
+      }
+    },
+    "RISH_to_KEDN": {
+      "source_id": "RISH",
+      "dest_id": "KEDN",
+      "is_identical": true,
+      "distance_diff_km": 0.0,
+      "cost_diff": 0.0,
+      "risk_reduction_pct": 0.0,
+      "recommendation": "The shortest path is already the safest path (233.0 km, risk cost: 361.08).",
+      "shortest_route": {
+        "source_id": "RISH",
+        "dest_id": "KEDN",
+        "mode": "shortest",
+        "found": true,
+        "path": [
+          "RISH",
+          "RUDR",
+          "UKHI",
+          "KEDN"
+        ],
+        "path_names": [
+          "Rishikesh",
+          "Rudraprayag",
+          "Ukhimath",
+          "Kedarnath"
+        ],
+        "coordinates": [
+          [
+            30.0869,
+            78.2676
+          ],
+          [
+            30.284,
+            78.98
+          ],
+          [
+            30.51,
+            79.09
+          ],
+          [
+            30.7346,
+            79.0669
+          ]
+        ],
+        "total_distance_km": 233.0,
+        "total_risk_cost": 361.08,
+        "average_risk_score": 38.06,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R07",
+            "from_id": "RISH",
+            "from_name": "Rishikesh",
+            "to_id": "RUDR",
+            "to_name": "Rudraprayag",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 140.0,
+            "edge_risk_score": 34.81,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.522,
+            "risk_cost": 213.08,
+            "from_coords": [
+              30.0869,
+              78.2676
+            ],
+            "to_coords": [
+              30.284,
+              78.98
+            ]
+          },
+          {
+            "road_id": "R08",
+            "from_id": "RUDR",
+            "from_name": "Rudraprayag",
+            "to_id": "UKHI",
+            "to_name": "Ukhimath",
+            "highway": "NH-107",
+            "road_type": "National Highway",
+            "distance_km": 42.0,
+            "edge_risk_score": 42.16,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.632,
+            "risk_cost": 68.54,
+            "from_coords": [
+              30.284,
+              78.98
+            ],
+            "to_coords": [
+              30.51,
+              79.09
+            ]
+          },
+          {
+            "road_id": "R09",
+            "from_id": "UKHI",
+            "from_name": "Ukhimath",
+            "to_id": "KEDN",
+            "to_name": "Kedarnath",
+            "highway": "NH-107",
+            "road_type": "Pilgrim Corridor",
+            "distance_km": 51.0,
+            "edge_risk_score": 37.21,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.558,
+            "risk_cost": 79.46,
+            "from_coords": [
+              30.51,
+              79.09
+            ],
+            "to_coords": [
+              30.7346,
+              79.0669
+            ]
+          }
+        ]
+      },
+      "safest_route": {
+        "source_id": "RISH",
+        "dest_id": "KEDN",
+        "mode": "safest",
+        "found": true,
+        "path": [
+          "RISH",
+          "RUDR",
+          "UKHI",
+          "KEDN"
+        ],
+        "path_names": [
+          "Rishikesh",
+          "Rudraprayag",
+          "Ukhimath",
+          "Kedarnath"
+        ],
+        "coordinates": [
+          [
+            30.0869,
+            78.2676
+          ],
+          [
+            30.284,
+            78.98
+          ],
+          [
+            30.51,
+            79.09
+          ],
+          [
+            30.7346,
+            79.0669
+          ]
+        ],
+        "total_distance_km": 233.0,
+        "total_risk_cost": 361.08,
+        "average_risk_score": 38.06,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R07",
+            "from_id": "RISH",
+            "from_name": "Rishikesh",
+            "to_id": "RUDR",
+            "to_name": "Rudraprayag",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 140.0,
+            "edge_risk_score": 34.81,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.522,
+            "risk_cost": 213.08,
+            "from_coords": [
+              30.0869,
+              78.2676
+            ],
+            "to_coords": [
+              30.284,
+              78.98
+            ]
+          },
+          {
+            "road_id": "R08",
+            "from_id": "RUDR",
+            "from_name": "Rudraprayag",
+            "to_id": "UKHI",
+            "to_name": "Ukhimath",
+            "highway": "NH-107",
+            "road_type": "National Highway",
+            "distance_km": 42.0,
+            "edge_risk_score": 42.16,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.632,
+            "risk_cost": 68.54,
+            "from_coords": [
+              30.284,
+              78.98
+            ],
+            "to_coords": [
+              30.51,
+              79.09
+            ]
+          },
+          {
+            "road_id": "R09",
+            "from_id": "UKHI",
+            "from_name": "Ukhimath",
+            "to_id": "KEDN",
+            "to_name": "Kedarnath",
+            "highway": "NH-107",
+            "road_type": "Pilgrim Corridor",
+            "distance_km": 51.0,
+            "edge_risk_score": 37.21,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.558,
+            "risk_cost": 79.46,
+            "from_coords": [
+              30.51,
+              79.09
+            ],
+            "to_coords": [
+              30.7346,
+              79.0669
+            ]
+          }
+        ]
+      }
+    },
+    "RISH_to_GANG": {
+      "source_id": "RISH",
+      "dest_id": "GANG",
+      "is_identical": true,
+      "distance_diff_km": 0.0,
+      "cost_diff": 0.0,
+      "risk_reduction_pct": 0.0,
+      "recommendation": "The shortest path is already the safest path (244.0 km, risk cost: 358.28).",
+      "shortest_route": {
+        "source_id": "RISH",
+        "dest_id": "GANG",
+        "mode": "shortest",
+        "found": true,
+        "path": [
+          "RISH",
+          "UTTK",
+          "GANG"
+        ],
+        "path_names": [
+          "Rishikesh",
+          "Uttarkashi",
+          "Gangotri"
+        ],
+        "coordinates": [
+          [
+            30.0869,
+            78.2676
+          ],
+          [
+            30.7298,
+            78.4434
+          ],
+          [
+            30.9943,
+            78.9398
+          ]
+        ],
+        "total_distance_km": 244.0,
+        "total_risk_cost": 358.28,
+        "average_risk_score": 31.82,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R04",
+            "from_id": "RISH",
+            "from_name": "Rishikesh",
+            "to_id": "UTTK",
+            "to_name": "Uttarkashi",
+            "highway": "NH-34",
+            "road_type": "National Highway",
+            "distance_km": 145.0,
+            "edge_risk_score": 28.59,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.429,
+            "risk_cost": 207.21,
+            "from_coords": [
+              30.0869,
+              78.2676
+            ],
+            "to_coords": [
+              30.7298,
+              78.4434
+            ]
+          },
+          {
+            "road_id": "R05",
+            "from_id": "UTTK",
+            "from_name": "Uttarkashi",
+            "to_id": "GANG",
+            "to_name": "Gangotri",
+            "highway": "NH-34",
+            "road_type": "National Highway",
+            "distance_km": 99.0,
+            "edge_risk_score": 35.05,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.526,
+            "risk_cost": 151.07,
+            "from_coords": [
+              30.7298,
+              78.4434
+            ],
+            "to_coords": [
+              30.9943,
+              78.9398
+            ]
+          }
+        ]
+      },
+      "safest_route": {
+        "source_id": "RISH",
+        "dest_id": "GANG",
+        "mode": "safest",
+        "found": true,
+        "path": [
+          "RISH",
+          "UTTK",
+          "GANG"
+        ],
+        "path_names": [
+          "Rishikesh",
+          "Uttarkashi",
+          "Gangotri"
+        ],
+        "coordinates": [
+          [
+            30.0869,
+            78.2676
+          ],
+          [
+            30.7298,
+            78.4434
+          ],
+          [
+            30.9943,
+            78.9398
+          ]
+        ],
+        "total_distance_km": 244.0,
+        "total_risk_cost": 358.28,
+        "average_risk_score": 31.82,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R04",
+            "from_id": "RISH",
+            "from_name": "Rishikesh",
+            "to_id": "UTTK",
+            "to_name": "Uttarkashi",
+            "highway": "NH-34",
+            "road_type": "National Highway",
+            "distance_km": 145.0,
+            "edge_risk_score": 28.59,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.429,
+            "risk_cost": 207.21,
+            "from_coords": [
+              30.0869,
+              78.2676
+            ],
+            "to_coords": [
+              30.7298,
+              78.4434
+            ]
+          },
+          {
+            "road_id": "R05",
+            "from_id": "UTTK",
+            "from_name": "Uttarkashi",
+            "to_id": "GANG",
+            "to_name": "Gangotri",
+            "highway": "NH-34",
+            "road_type": "National Highway",
+            "distance_km": 99.0,
+            "edge_risk_score": 35.05,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.526,
+            "risk_cost": 151.07,
+            "from_coords": [
+              30.7298,
+              78.4434
+            ],
+            "to_coords": [
+              30.9943,
+              78.9398
+            ]
+          }
+        ]
+      }
+    },
+    "KEDN_to_BADR": {
+      "source_id": "KEDN",
+      "dest_id": "BADR",
+      "is_identical": true,
+      "distance_diff_km": 0.0,
+      "cost_diff": 0.0,
+      "risk_reduction_pct": 0.0,
+      "recommendation": "The shortest path is already the safest path (212.0 km, risk cost: 326.85).",
+      "shortest_route": {
+        "source_id": "KEDN",
+        "dest_id": "BADR",
+        "mode": "shortest",
+        "found": true,
+        "path": [
+          "KEDN",
+          "UKHI",
+          "CHAM",
+          "BADR"
+        ],
+        "path_names": [
+          "Kedarnath",
+          "Ukhimath",
+          "Chamoli",
+          "Badrinath"
+        ],
+        "coordinates": [
+          [
+            30.7346,
+            79.0669
+          ],
+          [
+            30.51,
+            79.09
+          ],
+          [
+            30.42,
+            79.33
+          ],
+          [
+            30.7433,
+            79.4938
+          ]
+        ],
+        "total_distance_km": 212.0,
+        "total_risk_cost": 326.85,
+        "average_risk_score": 36.24,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R09_rev",
+            "from_id": "KEDN",
+            "from_name": "Kedarnath",
+            "to_id": "UKHI",
+            "to_name": "Ukhimath",
+            "highway": "NH-107",
+            "road_type": "Pilgrim Corridor",
+            "distance_km": 51.0,
+            "edge_risk_score": 37.21,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.558,
+            "risk_cost": 79.46,
+            "from_coords": [
+              30.7346,
+              79.0669
+            ],
+            "to_coords": [
+              30.51,
+              79.09
+            ]
+          },
+          {
+            "road_id": "R11",
+            "from_id": "UKHI",
+            "from_name": "Ukhimath",
+            "to_id": "CHAM",
+            "to_name": "Chamoli",
+            "highway": "NH-107A",
+            "road_type": "Mountain Pass",
+            "distance_km": 65.0,
+            "edge_risk_score": 35.7,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.536,
+            "risk_cost": 99.84,
+            "from_coords": [
+              30.51,
+              79.09
+            ],
+            "to_coords": [
+              30.42,
+              79.33
+            ]
+          },
+          {
+            "road_id": "R12",
+            "from_id": "CHAM",
+            "from_name": "Chamoli",
+            "to_id": "BADR",
+            "to_name": "Badrinath",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 96.0,
+            "edge_risk_score": 35.81,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.537,
+            "risk_cost": 147.55,
+            "from_coords": [
+              30.42,
+              79.33
+            ],
+            "to_coords": [
+              30.7433,
+              79.4938
+            ]
+          }
+        ]
+      },
+      "safest_route": {
+        "source_id": "KEDN",
+        "dest_id": "BADR",
+        "mode": "safest",
+        "found": true,
+        "path": [
+          "KEDN",
+          "UKHI",
+          "CHAM",
+          "BADR"
+        ],
+        "path_names": [
+          "Kedarnath",
+          "Ukhimath",
+          "Chamoli",
+          "Badrinath"
+        ],
+        "coordinates": [
+          [
+            30.7346,
+            79.0669
+          ],
+          [
+            30.51,
+            79.09
+          ],
+          [
+            30.42,
+            79.33
+          ],
+          [
+            30.7433,
+            79.4938
+          ]
+        ],
+        "total_distance_km": 212.0,
+        "total_risk_cost": 326.85,
+        "average_risk_score": 36.24,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R09_rev",
+            "from_id": "KEDN",
+            "from_name": "Kedarnath",
+            "to_id": "UKHI",
+            "to_name": "Ukhimath",
+            "highway": "NH-107",
+            "road_type": "Pilgrim Corridor",
+            "distance_km": 51.0,
+            "edge_risk_score": 37.21,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.558,
+            "risk_cost": 79.46,
+            "from_coords": [
+              30.7346,
+              79.0669
+            ],
+            "to_coords": [
+              30.51,
+              79.09
+            ]
+          },
+          {
+            "road_id": "R11",
+            "from_id": "UKHI",
+            "from_name": "Ukhimath",
+            "to_id": "CHAM",
+            "to_name": "Chamoli",
+            "highway": "NH-107A",
+            "road_type": "Mountain Pass",
+            "distance_km": 65.0,
+            "edge_risk_score": 35.7,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.536,
+            "risk_cost": 99.84,
+            "from_coords": [
+              30.51,
+              79.09
+            ],
+            "to_coords": [
+              30.42,
+              79.33
+            ]
+          },
+          {
+            "road_id": "R12",
+            "from_id": "CHAM",
+            "from_name": "Chamoli",
+            "to_id": "BADR",
+            "to_name": "Badrinath",
+            "highway": "NH-7",
+            "road_type": "National Highway",
+            "distance_km": 96.0,
+            "edge_risk_score": 35.81,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.537,
+            "risk_cost": 147.55,
+            "from_coords": [
+              30.42,
+              79.33
+            ],
+            "to_coords": [
+              30.7433,
+              79.4938
+            ]
+          }
+        ]
+      }
+    },
+    "RISH_to_UTTK": {
+      "source_id": "RISH",
+      "dest_id": "UTTK",
+      "is_identical": true,
+      "distance_diff_km": 0.0,
+      "cost_diff": 0.0,
+      "risk_reduction_pct": 0.0,
+      "recommendation": "The shortest path is already the safest path (145.0 km, risk cost: 207.21).",
+      "shortest_route": {
+        "source_id": "RISH",
+        "dest_id": "UTTK",
+        "mode": "shortest",
+        "found": true,
+        "path": [
+          "RISH",
+          "UTTK"
+        ],
+        "path_names": [
+          "Rishikesh",
+          "Uttarkashi"
+        ],
+        "coordinates": [
+          [
+            30.0869,
+            78.2676
+          ],
+          [
+            30.7298,
+            78.4434
+          ]
+        ],
+        "total_distance_km": 145.0,
+        "total_risk_cost": 207.21,
+        "average_risk_score": 28.59,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R04",
+            "from_id": "RISH",
+            "from_name": "Rishikesh",
+            "to_id": "UTTK",
+            "to_name": "Uttarkashi",
+            "highway": "NH-34",
+            "road_type": "National Highway",
+            "distance_km": 145.0,
+            "edge_risk_score": 28.59,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.429,
+            "risk_cost": 207.21,
+            "from_coords": [
+              30.0869,
+              78.2676
+            ],
+            "to_coords": [
+              30.7298,
+              78.4434
+            ]
+          }
+        ]
+      },
+      "safest_route": {
+        "source_id": "RISH",
+        "dest_id": "UTTK",
+        "mode": "safest",
+        "found": true,
+        "path": [
+          "RISH",
+          "UTTK"
+        ],
+        "path_names": [
+          "Rishikesh",
+          "Uttarkashi"
+        ],
+        "coordinates": [
+          [
+            30.0869,
+            78.2676
+          ],
+          [
+            30.7298,
+            78.4434
+          ]
+        ],
+        "total_distance_km": 145.0,
+        "total_risk_cost": 207.21,
+        "average_risk_score": 28.59,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R04",
+            "from_id": "RISH",
+            "from_name": "Rishikesh",
+            "to_id": "UTTK",
+            "to_name": "Uttarkashi",
+            "highway": "NH-34",
+            "road_type": "National Highway",
+            "distance_km": 145.0,
+            "edge_risk_score": 28.59,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.429,
+            "risk_cost": 207.21,
+            "from_coords": [
+              30.0869,
+              78.2676
+            ],
+            "to_coords": [
+              30.7298,
+              78.4434
+            ]
+          }
+        ]
+      }
+    },
+    "DEHR_to_MUSS": {
+      "source_id": "DEHR",
+      "dest_id": "MUSS",
+      "is_identical": true,
+      "distance_diff_km": 0.0,
+      "cost_diff": 0.0,
+      "risk_reduction_pct": 0.0,
+      "recommendation": "The shortest path is already the safest path (34.0 km, risk cost: 48.89).",
+      "shortest_route": {
+        "source_id": "DEHR",
+        "dest_id": "MUSS",
+        "mode": "shortest",
+        "found": true,
+        "path": [
+          "DEHR",
+          "MUSS"
+        ],
+        "path_names": [
+          "Dehradun",
+          "Mussoorie"
+        ],
+        "coordinates": [
+          [
+            30.3165,
+            78.0322
+          ],
+          [
+            30.4598,
+            78.0644
+          ]
+        ],
+        "total_distance_km": 34.0,
+        "total_risk_cost": 48.89,
+        "average_risk_score": 29.18,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R02",
+            "from_id": "DEHR",
+            "from_name": "Dehradun",
+            "to_id": "MUSS",
+            "to_name": "Mussoorie",
+            "highway": "Mussoorie Rd",
+            "road_type": "State Highway",
+            "distance_km": 34.0,
+            "edge_risk_score": 29.18,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.438,
+            "risk_cost": 48.89,
+            "from_coords": [
+              30.3165,
+              78.0322
+            ],
+            "to_coords": [
+              30.4598,
+              78.0644
+            ]
+          }
+        ]
+      },
+      "safest_route": {
+        "source_id": "DEHR",
+        "dest_id": "MUSS",
+        "mode": "safest",
+        "found": true,
+        "path": [
+          "DEHR",
+          "MUSS"
+        ],
+        "path_names": [
+          "Dehradun",
+          "Mussoorie"
+        ],
+        "coordinates": [
+          [
+            30.3165,
+            78.0322
+          ],
+          [
+            30.4598,
+            78.0644
+          ]
+        ],
+        "total_distance_km": 34.0,
+        "total_risk_cost": 48.89,
+        "average_risk_score": 29.18,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R02",
+            "from_id": "DEHR",
+            "from_name": "Dehradun",
+            "to_id": "MUSS",
+            "to_name": "Mussoorie",
+            "highway": "Mussoorie Rd",
+            "road_type": "State Highway",
+            "distance_km": 34.0,
+            "edge_risk_score": 29.18,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.438,
+            "risk_cost": 48.89,
+            "from_coords": [
+              30.3165,
+              78.0322
+            ],
+            "to_coords": [
+              30.4598,
+              78.0644
+            ]
+          }
+        ]
+      }
+    },
+    "CHAM_to_MALP": {
+      "source_id": "CHAM",
+      "dest_id": "MALP",
+      "is_identical": true,
+      "distance_diff_km": 0.0,
+      "cost_diff": 0.0,
+      "risk_reduction_pct": 0.0,
+      "recommendation": "The shortest path is already the safest path (260.0 km, risk cost: 417.04).",
+      "shortest_route": {
+        "source_id": "CHAM",
+        "dest_id": "MALP",
+        "mode": "shortest",
+        "found": true,
+        "path": [
+          "CHAM",
+          "MALP"
+        ],
+        "path_names": [
+          "Chamoli",
+          "Malpa"
+        ],
+        "coordinates": [
+          [
+            30.42,
+            79.33
+          ],
+          [
+            29.996,
+            80.82
+          ]
+        ],
+        "total_distance_km": 260.0,
+        "total_risk_cost": 417.04,
+        "average_risk_score": 40.28,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R13",
+            "from_id": "CHAM",
+            "from_name": "Chamoli",
+            "to_id": "MALP",
+            "to_name": "Malpa",
+            "highway": "NH-107B / NH-9",
+            "road_type": "Border Highway",
+            "distance_km": 260.0,
+            "edge_risk_score": 40.28,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.604,
+            "risk_cost": 417.04,
+            "from_coords": [
+              30.42,
+              79.33
+            ],
+            "to_coords": [
+              29.996,
+              80.82
+            ]
+          }
+        ]
+      },
+      "safest_route": {
+        "source_id": "CHAM",
+        "dest_id": "MALP",
+        "mode": "safest",
+        "found": true,
+        "path": [
+          "CHAM",
+          "MALP"
+        ],
+        "path_names": [
+          "Chamoli",
+          "Malpa"
+        ],
+        "coordinates": [
+          [
+            30.42,
+            79.33
+          ],
+          [
+            29.996,
+            80.82
+          ]
+        ],
+        "total_distance_km": 260.0,
+        "total_risk_cost": 417.04,
+        "average_risk_score": 40.28,
+        "max_risk_level": "Moderate",
+        "segments": [
+          {
+            "road_id": "R13",
+            "from_id": "CHAM",
+            "from_name": "Chamoli",
+            "to_id": "MALP",
+            "to_name": "Malpa",
+            "highway": "NH-107B / NH-9",
+            "road_type": "Border Highway",
+            "distance_km": 260.0,
+            "edge_risk_score": 40.28,
+            "edge_risk_level": "Moderate",
+            "risk_multiplier": 1.604,
+            "risk_cost": 417.04,
+            "from_coords": [
+              30.42,
+              79.33
+            ],
+            "to_coords": [
+              29.996,
+              80.82
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
