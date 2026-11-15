@@ -1,0 +1,9 @@
+case_id,source_id,dest_id,scenario,override_type,override_target,override_score,override_level,expected_shortest,expected_safest,description
+C01_baseline_dry_rish_badr,RISH,BADR,dry_baseline,NONE,NONE,0.0,Low,RISH->RUDR->CHAM->BADR,RISH->RUDR->CHAM->BADR,Under normal weather shortest route along NH-7 is optimal
+C02_baseline_dham_cross_kedn_badr,KEDN,BADR,dry_baseline,NONE,NONE,0.0,Low,KEDN->UKHI->CHAM->BADR,KEDN->UKHI->CHAM->BADR,Chopta mountain pass route is both shortest and safest between dhams
+C03_baseline_rish_uttk,RISH,UTTK,dry_baseline,NONE,NONE,0.0,Low,RISH->UTTK,RISH->UTTK,Direct NH-34 corridor via Chamba is optimal under clear skies
+C04_cloudburst_rudr_divert_kedn,RISH,KEDN,cloudburst_RUDR,NODE,RUDR,77.08,Critical,RISH->RUDR->UKHI->KEDN,RISH->UTTK->UKHI->KEDN,Safest takes 88km bypass via Uttarkashi-Kund to avoid active disaster at RUDR
+C05_cloudburst_rudr_divert_badr,RISH,BADR,cloudburst_RUDR,NODE,RUDR,77.08,Critical,RISH->RUDR->CHAM->BADR,RISH->UTTK->UKHI->CHAM->BADR,Safest route avoids RUDR gorge entirely via Uttarkashi-Chopta corridor
+C06_gorge_block_rudr_cham,RUDR,BADR,gorge_landslide_RUDR_CHAM,EDGE,R10,82.00,Critical,RUDR->CHAM->BADR,RUDR->UKHI->CHAM->BADR,Alaknanda gorge blocked; safest diverts 39km via Ukhimath-Chopta pass
+C07_narendra_nagar_block,RISH,UTTK,direct_nh34_landslide,EDGE,R04,85.00,Critical,RISH->UTTK,RISH->DEHR->MUSS->UTTK,Direct NH-34 blocked; traffic safely detours via Dehradun-Mussoorie ridge
+C08_monsoon_malpa_flank,CHAM,MALP,monsoon_flank,NODE,MALP,69.88,High,CHAM->MALP,CHAM->MALP,Single border corridor into Malpa verified with appropriate high risk weighting
