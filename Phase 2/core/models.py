@@ -7,39 +7,33 @@ Author: Anshika Gaur (Member 3)
 
 This module encapsulates all core domain entities for SlopeShield:
 1. Location: Encapsulated geographical node with static terrain features and risk state.
-2. RoadSegment: Encapsulated highway edge with physical distance, risk weights, and geometry.
+2. RoadSegment: Encapsulated highway edge with physical distance and risk weights.
 3. RiskProfile: Encapsulated risk evaluation state (static, dynamic, total, level).
 4. WeatherReading: Encapsulated dynamic meteorological observation.
-5. RouteResult: Encapsulated single-path traversal computation from Dijkstra with full geometry.
+5. RouteResult: Encapsulated single-path traversal computation from Dijkstra.
 6. RouteComparison: Encapsulated comparison between shortest and safest paths.
 """
 
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timezone
-from abc import ABC, abstractmethod
 
 
-class BaseEntity(ABC):
-    """Abstract base entity providing standardized serialization contract."""
-    @abstractmethod
+class BaseEntity:
+    """Abstract base entity providing standardized serialization."""
     def to_dict(self) -> Dict[str, Any]:
-        """Serialize entity state into a JSON-compatible dictionary."""
-        pass
+        raise NotImplementedError("Subclasses must implement to_dict()")
 
 
 class RiskProfile(BaseEntity):
     """
     Encapsulates risk scores and categorical risk level for a location or road segment.
-    Enforces score clamping to [0.0, 100.0] and validates categorical risk labels.
+    Guarantees that classification level strictly corresponds to the numeric score.
     """
-    VALID_LEVELS = {"Low", "Moderate", "High", "Critical"}
-
     def __init__(self, static_score: float = 0.0, dynamic_score: float = 0.0, total_score: float = 0.0, risk_level: str = "Low"):
-        self._static_score: float = max(0.0, min(100.0, float(static_score)))
-        self._dynamic_score: float = max(0.0, min(100.0, float(dynamic_score)))
-        self._total_score: float = max(0.0, min(100.0, float(total_score)))
-        lvl = str(risk_level).strip()
-        self._risk_level: str = lvl if lvl in self.VALID_LEVELS else "Low"
+        self._static_score: float = float(static_score)
+        self._dynamic_score: float = float(dynamic_score)
+        self._total_score: float = float(total_score)
+        self._risk_level: str = str(risk_level)
 
     @property
     def static_score(self) -> float:
@@ -58,13 +52,13 @@ class RiskProfile(BaseEntity):
         return self._risk_level
 
     def update_scores(self, static_score: float, dynamic_score: float, total_score: float, risk_level: Optional[str] = None):
-        """Update scores and enforce risk level categorization and [0, 100] bounds."""
-        self._static_score = round(max(0.0, min(100.0, float(static_score))), 2)
-        self._dynamic_score = round(max(0.0, min(100.0, float(dynamic_score))), 2)
-        self._total_score = round(max(0.0, min(100.0, float(total_score))), 2)
+        """Update scores and enforce risk level categorization."""
+        self._static_score = round(float(static_score), 2)
+        self._dynamic_score = round(float(dynamic_score), 2)
+        self._total_score = round(float(total_score), 2)
 
-        if risk_level and str(risk_level).strip() in self.VALID_LEVELS:
-            self._risk_level = str(risk_level).strip()
+        if risk_level:
+            self._risk_level = risk_level
         else:
             # Enforce standard SlopeShield threshold cutoffs
             if self._total_score < 25.0:
@@ -92,13 +86,18 @@ class WeatherReading(BaseEntity):
     """Encapsulates weather observations and forecast metrics for a location."""
     def __init__(self, current_rain_mm: float = 0.0, forecast_24h_mm: float = 0.0,
                  humidity_pct: int = 50, antecedent_3d_mm: float = 0.0,
-                 temp_c: float = 20.0, weather_desc: str = ""):
+                 temp_c: float = 20.0, weather_desc: str = "",
+                 source: str = "mock", fetched_at: Optional[str] = None,
+                 stale: bool = False):
         self._current_rain_mm = max(0.0, float(current_rain_mm))
         self._forecast_24h_mm = max(0.0, float(forecast_24h_mm))
         self._humidity_pct = min(100, max(0, int(humidity_pct)))
         self._antecedent_3d_mm = max(0.0, float(antecedent_3d_mm))
         self._temp_c = float(temp_c)
         self._weather_desc = str(weather_desc)
+        self._source = str(source)
+        self._fetched_at = str(fetched_at) if fetched_at else datetime.now(timezone.utc).isoformat()
+        self._stale = bool(stale)
 
     @property
     def current_rain_mm(self) -> float:
@@ -124,6 +123,34 @@ class WeatherReading(BaseEntity):
     def weather_desc(self) -> str:
         return self._weather_desc
 
+    @property
+    def source(self) -> str:
+        return self._source
+
+    @property
+    def fetched_at(self) -> str:
+        return self._fetched_at
+
+    @property
+    def last_updated(self) -> str:
+        return self._fetched_at
+
+    @property
+    def stale(self) -> bool:
+        return self._stale
+
+    @property
+    def freshness(self) -> str:
+        if self._stale:
+            return "stale"
+        if self._source == "mock":
+            return "mock"
+        if "cache" in self._source.lower():
+            return "cached"
+        if "fallback" in self._source.lower():
+            return "fallback"
+        return "fresh"
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "current_rain_mm": self._current_rain_mm,
@@ -131,7 +158,12 @@ class WeatherReading(BaseEntity):
             "humidity_pct": self._humidity_pct,
             "antecedent_3d_mm": self._antecedent_3d_mm,
             "temp_c": self._temp_c,
-            "weather_desc": self._weather_desc
+            "weather_desc": self._weather_desc,
+            "source": self._source,
+            "fetched_at": self._fetched_at,
+            "last_updated": self._fetched_at,
+            "stale": self._stale,
+            "freshness": self.freshness
         }
 
 
@@ -144,25 +176,16 @@ class Location(BaseEntity):
                  slope_deg: float = 0.0, soil_type: str = "loamy", landuse: str = "non-forest",
                  lithology_factor: float = 0.5, historical_count: int = 0, road_condition: str = "moderate",
                  static_notes: str = ""):
-        lid = location_id.strip()
-        if not lid:
-            raise ValueError("[Location] location_id cannot be empty.")
-        self._id = lid
-        self._name = name.strip() if name else lid
-        
-        lat_f = float(lat)
-        lon_f = float(lon)
-        if not (-90.0 <= lat_f <= 90.0) or not (-180.0 <= lon_f <= 180.0):
-            raise ValueError(f"[Location {lid}] Invalid GPS coordinates: lat={lat_f}, lon={lon_f}")
-        self._lat = lat_f
-        self._lon = lon_f
-
-        self._elevation_m = max(-500.0, float(elevation_m))
-        self._slope_deg = max(0.0, min(90.0, float(slope_deg)))
+        self._id = location_id.strip()
+        self._name = name.strip()
+        self._lat = float(lat)
+        self._lon = float(lon)
+        self._elevation_m = float(elevation_m)
+        self._slope_deg = float(slope_deg)
         self._soil_type = soil_type.strip().lower()
         self._landuse = landuse.strip().lower()
-        self._lithology_factor = max(0.0, min(1.0, float(lithology_factor)))
-        self._historical_count = max(0, int(historical_count))
+        self._lithology_factor = float(lithology_factor)
+        self._historical_count = int(historical_count)
         self._road_condition = road_condition.strip().lower()
         self._static_notes = static_notes.strip()
 
@@ -249,7 +272,10 @@ class Location(BaseEntity):
             "risk_level": self._risk.risk_level,
             "static_score": self._risk.static_score,
             "dynamic_score": self._risk.dynamic_score,
-            "weather": self._weather.to_dict()
+            "weather": self._weather.to_dict(),
+            "weather_source": self._weather.source,
+            "weather_stale": self._weather.stale,
+            "weather_fetched_at": self._weather.fetched_at
         }
 
     def __repr__(self) -> str:
@@ -259,43 +285,23 @@ class Location(BaseEntity):
 class RoadSegment(BaseEntity):
     """
     Encapsulates a highway segment connecting two locations.
-    Contains both physical route details, dynamically calculated risk costs,
-    and verified OpenStreetMap road geometry.
+    Contains both physical route details and dynamically calculated risk costs.
     """
     def __init__(self, road_id: str, u: str, v: str, distance_km: float,
-                 highway: str = "", road_type: str = "", description: str = "",
-                 geometry: Optional[List[List[float]]] = None,
-                 has_verified_geometry: bool = False):
-        rid = road_id.strip()
-        if not rid:
-            raise ValueError("[RoadSegment] road_id cannot be empty.")
-        self._road_id = rid
-
-        u_id = u.strip()
-        v_id = v.strip()
-        if not u_id or not v_id:
-            raise ValueError(f"[RoadSegment {rid}] Endpoint location IDs cannot be empty.")
-        self._u = u_id
-        self._v = v_id
-
-        dist = float(distance_km)
-        if dist <= 0.0:
-            raise ValueError(f"[RoadSegment {rid}] distance_km must be strictly positive, got {dist}")
-        self._distance_km = dist
-
+                 highway: str = "", road_type: str = "", description: str = ""):
+        self._road_id = road_id.strip()
+        self._u = u.strip()
+        self._v = v.strip()
+        self._distance_km = float(distance_km)
         self._highway = highway.strip()
         self._road_type = road_type.strip()
         self._description = description.strip()
-
-        # Road geometry: ordered list of [lat, lon] points
-        self._geometry: List[List[float]] = geometry if geometry is not None else []
-        self._has_verified_geometry: bool = has_verified_geometry
 
         # Dynamic risk-weighted routing attributes
         self._edge_risk_score: float = 0.0
         self._edge_risk_level: str = "Low"
         self._risk_multiplier: float = 1.0
-        self._risk_cost: float = float(dist)
+        self._risk_cost: float = float(distance_km)
         self._critical_penalty_applied: bool = False
 
     @property
@@ -325,27 +331,6 @@ class RoadSegment(BaseEntity):
     @property
     def description(self) -> str:
         return self._description
-
-    @property
-    def geometry(self) -> List[List[float]]:
-        return self._geometry
-
-    @property
-    def has_verified_geometry(self) -> bool:
-        return self._has_verified_geometry
-
-    def set_geometry(self, geometry: List[List[float]], has_verified: bool = True):
-        self._geometry = geometry
-        self._has_verified_geometry = has_verified
-
-    def get_traversal_coordinates(self, forward: bool = True) -> List[List[float]]:
-        """Returns ordered [lat, lon] coordinates in the direction of traversal."""
-        if not self._geometry:
-            return []
-        if forward:
-            return [list(pt) for pt in self._geometry]
-        else:
-            return [list(pt) for pt in reversed(self._geometry)]
 
     @property
     def edge_risk_score(self) -> float:
@@ -422,9 +407,7 @@ class RoadSegment(BaseEntity):
             "edge_risk_level": self._edge_risk_level,
             "risk_multiplier": self._risk_multiplier,
             "risk_cost": self._risk_cost,
-            "critical_penalty_applied": self._critical_penalty_applied,
-            "has_verified_geometry": self._has_verified_geometry,
-            "geometry": self._geometry
+            "critical_penalty_applied": self._critical_penalty_applied
         }
 
     def __repr__(self) -> str:
@@ -441,17 +424,14 @@ class RouteResult(BaseEntity):
         self.path: List[str] = []
         self.path_names: List[str] = []
         self.coordinates: List[List[float]] = []
-        self.has_verified_geometry: bool = False
-        self.is_schematic: bool = True
         self.total_distance_km: float = 0.0
         self.total_risk_cost: float = 0.0
         self.average_risk_score: float = 0.0
         self.max_risk_level: str = "Low"
         self.segments: List[Dict[str, Any]] = []
-        self.error_message: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        res = {
+        return {
             "source_id": self.source_id,
             "dest_id": self.dest_id,
             "mode": self.mode,
@@ -459,17 +439,12 @@ class RouteResult(BaseEntity):
             "path": self.path,
             "path_names": self.path_names,
             "coordinates": self.coordinates,
-            "has_verified_geometry": self.has_verified_geometry,
-            "is_schematic": self.is_schematic,
             "total_distance_km": round(self.total_distance_km, 2),
             "total_risk_cost": round(self.total_risk_cost, 2),
             "average_risk_score": round(self.average_risk_score, 2),
             "max_risk_level": self.max_risk_level,
             "segments": self.segments
         }
-        if self.error_message:
-            res["error_message"] = self.error_message
-        return res
 
 
 class RouteComparison(BaseEntity):
@@ -477,7 +452,7 @@ class RouteComparison(BaseEntity):
     def __init__(self, shortest: RouteResult, safest: RouteResult):
         self.shortest = shortest
         self.safest = safest
-        self.is_identical = (shortest.path == safest.path) and shortest.found and safest.found
+        self.is_identical = (shortest.path == safest.path)
         self.distance_diff_km = round(safest.total_distance_km - shortest.total_distance_km, 2)
         self.cost_diff = round(safest.total_risk_cost - shortest.total_risk_cost, 2)
 
@@ -487,9 +462,7 @@ class RouteComparison(BaseEntity):
         else:
             self.risk_reduction_pct = 0.0
 
-        if not shortest.found or not safest.found:
-            self.recommendation = "No route found between the specified locations."
-        elif self.is_identical:
+        if self.is_identical:
             self.recommendation = (f"The shortest path is already the safest path "
                                    f"({safest.total_distance_km} km, risk cost: {safest.total_risk_cost}).")
         else:
@@ -506,7 +479,6 @@ class RouteComparison(BaseEntity):
             "cost_diff": self.cost_diff,
             "risk_reduction_pct": self.risk_reduction_pct,
             "recommendation": self.recommendation,
-            "has_verified_geometry": self.safest.has_verified_geometry,
             "shortest_route": self.shortest.to_dict(),
             "safest_route": self.safest.to_dict()
         }
