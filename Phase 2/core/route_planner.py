@@ -2,15 +2,15 @@
 ================================================================================
 SlopeShield: Intelligent Landslide Risk & Safe Route System
 OOP Route Planner & DSA Graph Hierarchy (Member 3 Architecture integrating Member 2 DSA)
-Authors: Jahnvi Verma (Member 2: Graph & Dijkstra) & Anshika Gaur (Member 3: Integration)
+Author: Anshika Gaur (Member 3)
 ================================================================================
 
 This module encapsulates Member 2's DSA routing architecture in an OOP hierarchy:
 1. BaseRoutePlanner: Abstract Base Class defining pathfinding algorithms.
 2. MinPriorityQueue: Custom Min-Heap Priority Queue from scratch (CLRS design).
-3. RoadGraph: Graph representation using an Adjacency List with road geometry preservation.
+3. RoadGraph: Graph representation using an Adjacency List.
 4. DijkstraRoutePlanner: Concrete implementation of Dijkstra's algorithm for
-   Shortest Distance and Safest Risk-Weighted paths, concatenating detailed road geometry.
+   Shortest Distance and Safest Risk-Weighted paths.
 """
 
 from abc import ABC, abstractmethod
@@ -89,7 +89,6 @@ class RoadGraph:
     """
     Graph data structure representing the Uttarakhand road network.
     Uses an Adjacency List for space efficiency and fast neighbor traversal.
-    Maintains intermediate polyline coordinates for all road corridors.
     """
     def __init__(self):
         self._vertices: Dict[str, Location] = {}
@@ -110,14 +109,13 @@ class RoadGraph:
             self._adj[location.id] = []
 
     def add_road(self, road: RoadSegment, bidirectional: bool = True) -> None:
-        """Add a road corridor edge to the graph, preserving reverse geometry."""
+        """Add a road corridor edge to the graph."""
         if road.u not in self._vertices or road.v not in self._vertices:
             raise KeyError(f"Vertices {road.u} or {road.v} must be added to graph before adding road.")
 
         self._adj[road.u].append(road)
 
         if bidirectional:
-            rev_geom = [list(pt) for pt in reversed(road.geometry)] if road.geometry else []
             rev_road = RoadSegment(
                 road_id=f"{road.road_id}_rev",
                 u=road.v,
@@ -125,9 +123,7 @@ class RoadGraph:
                 distance_km=road.distance_km,
                 highway=road.highway,
                 road_type=road.road_type,
-                description=road.description,
-                geometry=rev_geom,
-                has_verified_geometry=road.has_verified_geometry
+                description=road.description
             )
             self._adj[road.v].append(rev_road)
 
@@ -163,9 +159,11 @@ class RoadGraph:
                 clean_id = edge.road_id.replace("_rev", "")
                 custom_override = edge_overrides.get(clean_id)
 
+                # If either endpoint has a node override, simulate via temporary location
                 temp_u = u_loc
                 temp_v = v_loc
                 if u in node_overrides or edge.v in node_overrides:
+                    # Create temporary location objects for simulation
                     temp_u = Location(u_loc.id, u_loc.name, u_loc.lat, u_loc.lon)
                     temp_v = Location(v_loc.id, v_loc.name, v_loc.lat, v_loc.lon)
 
@@ -193,18 +191,12 @@ class DijkstraRoutePlanner(BaseRoutePlanner):
     """
     Dijkstra's Algorithm Route Planner utilizing the custom MinPriorityQueue.
     Supports 'safest' (risk-weighted) and 'shortest' (distance) modes.
-    Concatenates complete, verified road geometry in strict traversal order.
     """
 
     def find_path(self, graph: RoadGraph, source: str, destination: str, mode: str = "safest") -> RouteResult:
         result = RouteResult(source, destination, mode)
 
-        if not graph.vertices:
-            result.error_message = "Graph is empty."
-            return result
-
         if source not in graph.vertices or destination not in graph.vertices:
-            result.error_message = f"Invalid location: source '{source}' or destination '{destination}' does not exist in network."
             return result
 
         if source == destination:
@@ -213,8 +205,6 @@ class DijkstraRoutePlanner(BaseRoutePlanner):
             result.path = [source]
             result.path_names = [v.name]
             result.coordinates = [[v.lat, v.lon]]
-            result.has_verified_geometry = True
-            result.is_schematic = False
             result.total_distance_km = 0.0
             result.total_risk_cost = 0.0
             result.average_risk_score = v.risk.total_score
@@ -249,8 +239,6 @@ class DijkstraRoutePlanner(BaseRoutePlanner):
                     continue
 
                 weight = edge.risk_cost if mode == "safest" else edge.distance_km
-                if weight < 0.0:
-                    weight = 0.0  # Dijkstra invariant: non-negative weights
                 new_dist = curr_dist + weight
 
                 if new_dist < dist[v]:
@@ -261,7 +249,6 @@ class DijkstraRoutePlanner(BaseRoutePlanner):
 
         if dist[destination] == float('inf'):
             result.found = False
-            result.error_message = f"Destination '{destination}' is unreachable from source '{source}'."
             return result
 
         # Backtrack path
@@ -281,18 +268,15 @@ class DijkstraRoutePlanner(BaseRoutePlanner):
         result.found = True
         result.path = path_nodes
         result.path_names = [graph.vertices[nid].name for nid in path_nodes]
-
-        # Concatenate complete road geometry in exact traversal order
-        concatenated_coords: List[List[float]] = []
-        all_verified = len(path_edges) > 0
+        result.coordinates = [[graph.vertices[nid].lat, graph.vertices[nid].lon] for nid in path_nodes]
 
         tot_dist = 0.0
         tot_cost = 0.0
         risk_scores = []
         levels_order = {"Low": 0, "Moderate": 1, "High": 2, "Critical": 3}
         max_level_val = 0
-        segments = []
 
+        segments = []
         for e in path_edges:
             tot_dist += e.distance_km
             tot_cost += e.risk_cost
@@ -302,25 +286,6 @@ class DijkstraRoutePlanner(BaseRoutePlanner):
 
             for lvl in [u_loc.risk.risk_level, v_loc.risk.risk_level, e.edge_risk_level]:
                 max_level_val = max(max_level_val, levels_order.get(lvl, 0))
-
-            # Segment geometry traversal
-            if e.geometry and len(e.geometry) > 1:
-                e_coords = [list(pt) for pt in e.geometry]
-            else:
-                e_coords = [[u_loc.lat, u_loc.lon], [v_loc.lat, v_loc.lon]]
-                all_verified = False
-
-            if not e.has_verified_geometry:
-                all_verified = False
-
-            # Concatenate coordinates avoiding duplicate junction point
-            if not concatenated_coords:
-                concatenated_coords.extend(e_coords)
-            else:
-                if e_coords and concatenated_coords[-1] == e_coords[0]:
-                    concatenated_coords.extend(e_coords[1:])
-                else:
-                    concatenated_coords.extend(e_coords)
 
             segments.append({
                 "road_id": e.road_id,
@@ -336,18 +301,10 @@ class DijkstraRoutePlanner(BaseRoutePlanner):
                 "risk_multiplier": e.risk_multiplier,
                 "risk_cost": e.risk_cost,
                 "from_coords": [u_loc.lat, u_loc.lon],
-                "to_coords": [v_loc.lat, v_loc.lon],
-                "has_verified_geometry": e.has_verified_geometry,
-                "geometry": e_coords
+                "to_coords": [v_loc.lat, v_loc.lon]
             })
 
-        if not concatenated_coords:
-            concatenated_coords = [[graph.vertices[nid].lat, graph.vertices[nid].lon] for nid in path_nodes]
-
         inv_levels = {0: "Low", 1: "Moderate", 2: "High", 3: "Critical"}
-        result.coordinates = concatenated_coords
-        result.has_verified_geometry = all_verified
-        result.is_schematic = not all_verified
         result.total_distance_km = round(tot_dist, 2)
         result.total_risk_cost = round(tot_cost, 2)
         result.average_risk_score = round(sum(risk_scores) / len(risk_scores), 2) if risk_scores else 0.0
