@@ -6,16 +6,14 @@ Author: Anshika Gaur (Member 3)
 ================================================================================
 
 This module connects SlopeShield backend output with Member 4's presentation layer:
-- Provides a zero-dependency HTTP REST API built using standard library http.server.
+- Provides a zero-dependency HTTP REST API (built using standard library http.server).
 - Enables CORS for local web browsers and Leaflet map clients.
-- Serves static assets for the official Leaflet frontend (index.html, app.js, style.css).
-- Exposes dynamic query endpoints (/api/locations, /api/roads, /api/route, /api/routes, /api/weather/status, /api/weather/refresh, /api/simulate).
-- Provides an embedded testing dashboard on /dashboard.
+- Provides dynamic query endpoints (/api/locations, /api/roads, /api/route, /api/simulate).
+- Serves an interactive preview interface on GET / for instant frontend-backend verification.
 """
 
 import os
 import json
-import mimetypes
 import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Dict, Any, Optional
@@ -27,7 +25,6 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
     """HTTP Request Handler routing REST API endpoints to SlopeShieldBackend."""
 
     backend: Optional[SlopeShieldBackend] = None
-    frontend_dir: Optional[str] = None
 
     def _set_headers(self, status: int = 200, content_type: str = "application/json"):
         self.send_response(status)
@@ -42,37 +39,26 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
         self._set_headers(200)
 
     def do_GET(self):
-        """Route GET requests to API endpoints or static frontend files."""
+        """Route GET requests to API endpoints or static frontend preview."""
         parsed_url = urllib.parse.urlparse(self.path)
         path = parsed_url.path
         query_params = urllib.parse.parse_qs(parsed_url.query)
 
         if not self.backend:
-            self._send_json(500, {"error": "Backend service not initialized"})
+            self._set_headers(500)
+            self.wfile.write(json.dumps({"error": "Backend service not initialized"}).encode("utf-8"))
             return
 
         try:
             if path == "/api/health":
-                weather_status = self.backend.get_weather_status()
                 response = {
                     "status": "healthy",
                     "system": "SlopeShield Intelligent Safe Route System",
-                    "author": "The Debug Divas (Integration: Anshika Gaur - Member 3)",
+                    "author": "The Debug Divas",
                     "locations_count": len(self.backend.locations),
-                    "roads_count": len(self.backend.roads),
-                    "weather_status": weather_status
+                    "roads_count": len(self.backend.roads)
                 }
                 self._send_json(200, response)
-
-            elif path == "/api/weather/status":
-                status = self.backend.get_weather_status()
-                self._send_json(200, status)
-
-            elif path == "/api/weather/refresh":
-                mode = query_params.get("mode", ["mock"])[0].lower()
-                api_key = query_params.get("api_key", [None])[0]
-                res = self.backend.refresh_weather_and_scores(mode=mode, api_key=api_key)
-                self._send_json(200, res)
 
             elif path == "/api/locations":
                 locs = self.backend.get_locations_summary()
@@ -89,25 +75,15 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
             elif path == "/api/route":
                 source = query_params.get("source", ["RISH"])[0].upper()
                 dest = query_params.get("dest", ["BADR"])[0].upper()
-
-                if source not in self.backend.locations or dest not in self.backend.locations:
-                    self._send_json(400, {
-                        "error": f"Invalid location: source '{source}' or destination '{dest}' not recognized.",
-                        "valid_locations": list(self.backend.locations.keys())
-                    })
-                    return
+                mode = query_params.get("mode", ["safest"])[0].lower()
 
                 comparison = self.backend.compare_route(source, dest)
                 self._send_json(200, comparison.to_dict())
 
             elif path == "/api/simulate":
-                ov_type = query_params.get("override_type", ["NODE"])[0].upper()
-                target = query_params.get("target", ["RUDR"])[0].upper()
-                try:
-                    score = float(query_params.get("score", [77.08])[0])
-                except ValueError:
-                    self._send_json(400, {"error": "Invalid score parameter, must be a float."})
-                    return
+                ov_type = query_params.get("override_type", ["NODE"])[0]
+                target = query_params.get("target", ["RUDR"])[0]
+                score = float(query_params.get("score", [77.08])[0])
                 level = query_params.get("level", ["Critical"])[0]
 
                 res = self.backend.simulate_hazard(ov_type, target, score, level)
@@ -117,36 +93,36 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
                 self.backend.reset_hazards()
                 self._send_json(200, {"status": "hazards_reset_to_baseline"})
 
-            elif path == "/dashboard":
-                self._serve_embedded_dashboard()
+            elif path == "/api/weather/refresh":
+                raw_key = query_params.get("api_key", [""])[0].strip()
+                api_key = raw_key or os.environ.get("OWM_API_KEY", "").strip()
+                live_flag = query_params.get("live", ["0"])[0].strip().lower() in ["1", "true", "yes"]
+                mock_flag = query_params.get("mock", query_params.get("use_mock", ["0"]))[0].strip().lower() in ["1", "true", "yes"]
 
-            # Static asset serving for Member 4's frontend
+                if live_flag and not api_key:
+                    self._send_json(400, {
+                        "status": "error",
+                        "error": "OpenWeatherMap API key required for live weather refresh. Pass 'api_key' query parameter or set OWM_API_KEY environment variable.",
+                        "data_source": "none",
+                        "is_live": False
+                    })
+                    return
+
+                use_mock = True if mock_flag else (False if (live_flag or (api_key and not mock_flag)) else True)
+                res = self.backend.refresh_weather_and_scores(use_mock=use_mock, api_key=api_key)
+                self._send_json(200, res)
+
             elif path in ["/", "/index.html"]:
-                self._serve_static_file("index.html", "text/html")
-
-            elif path in ["/app.js", "/frontend/app.js"]:
-                self._serve_static_file("app.js", "application/javascript")
-
-            elif path in ["/style.css", "/frontend/style.css"]:
-                self._serve_static_file("style.css", "text/css")
-
-            elif path in ["/data/route_output.json", "/frontend/data/route_output.json"]:
-                data_path = os.path.join(self.backend.data_manager.base_dir, "data", "route_output.json")
-                if os.path.exists(data_path):
-                    with open(data_path, "rb") as f:
-                        self._set_headers(200, "application/json")
-                        self.wfile.write(f.read())
-                else:
-                    self._send_json(404, {"error": "data/route_output.json not found"})
+                self._serve_interactive_dashboard()
 
             else:
                 self._send_json(404, {"error": f"Endpoint '{path}' not found."})
 
         except Exception as ex:
-            self._send_json(500, {"error": f"Internal Server Error: {str(ex)}"})
+            self._send_json(500, {"error": str(ex)})
 
     def do_POST(self):
-        """Route POST requests for route calculation, weather refresh, and simulations."""
+        """Route POST requests for route calculation and simulations."""
         parsed_url = urllib.parse.urlparse(self.path)
         path = parsed_url.path
 
@@ -160,25 +136,19 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
         try:
             body = json.loads(body_bytes.decode("utf-8")) if body_bytes else {}
         except json.JSONDecodeError:
-            self._send_json(400, {"error": "Invalid JSON request body"})
+            self._send_json(400, {"error": "Invalid JSON body"})
             return
 
         try:
             if path == "/api/route":
                 source = body.get("source", "RISH").upper()
                 dest = body.get("dest", "BADR").upper()
-                if source not in self.backend.locations or dest not in self.backend.locations:
-                    self._send_json(400, {
-                        "error": f"Invalid location: source '{source}' or destination '{dest}' not recognized.",
-                        "valid_locations": list(self.backend.locations.keys())
-                    })
-                    return
                 comparison = self.backend.compare_route(source, dest)
                 self._send_json(200, comparison.to_dict())
 
             elif path == "/api/simulate":
-                ov_type = body.get("override_type", "NODE").upper()
-                target = body.get("target", "RUDR").upper()
+                ov_type = body.get("override_type", "NODE")
+                target = body.get("target", "RUDR")
                 score = float(body.get("score", 77.08))
                 level = body.get("level", "Critical")
 
@@ -190,43 +160,39 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"status": "hazards_reset_to_baseline"})
 
             elif path == "/api/weather/refresh":
-                mode = body.get("mode")
-                if mode is None:
-                    # check boolean use_mock
-                    use_mock = body.get("use_mock", True)
-                    mode = "mock" if use_mock else "live"
-                api_key = body.get("api_key")
-                res = self.backend.refresh_weather_and_scores(mode=mode, api_key=api_key)
+                raw_key = str(body.get("api_key", "")).strip()
+                api_key = raw_key or os.environ.get("OWM_API_KEY", "").strip()
+                live_flag = bool(body.get("live", False))
+                use_mock_explicit = body.get("use_mock")
+
+                if live_flag and not api_key:
+                    self._send_json(400, {
+                        "status": "error",
+                        "error": "OpenWeatherMap API key required for live weather refresh. Provide 'api_key' in JSON payload or set OWM_API_KEY environment variable.",
+                        "data_source": "none",
+                        "is_live": False
+                    })
+                    return
+
+                if use_mock_explicit is not None:
+                    use_mock = bool(use_mock_explicit)
+                else:
+                    use_mock = False if (live_flag or (api_key and "use_mock" not in body)) else True
+
+                res = self.backend.refresh_weather_and_scores(use_mock=use_mock, api_key=api_key)
                 self._send_json(200, res)
 
             else:
                 self._send_json(404, {"error": f"POST endpoint '{path}' not found."})
 
         except Exception as ex:
-            self._send_json(500, {"error": f"Internal Server Error: {str(ex)}"})
-
-    def _serve_static_file(self, filename: str, content_type: str):
-        """Serves a static file from frontend/ directory."""
-        base_dir = self.backend.data_manager.base_dir if self.backend else os.path.dirname(os.path.dirname(__file__))
-        file_path = os.path.join(base_dir, "frontend", filename)
-
-        if not os.path.exists(file_path):
-            self._send_json(404, {"error": f"File {filename} not found at {file_path}"})
-            return
-
-        try:
-            with open(file_path, "rb") as f:
-                content = f.read()
-            self._set_headers(200, content_type)
-            self.wfile.write(content)
-        except Exception as e:
-            self._send_json(500, {"error": f"Error reading file: {str(e)}"})
+            self._send_json(500, {"error": str(ex)})
 
     def _send_json(self, status: int, data: Dict[str, Any]):
         self._set_headers(status, "application/json")
         self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
 
-    def _serve_embedded_dashboard(self):
+    def _serve_interactive_dashboard(self):
         """Serves a clean HTML test dashboard to verify frontend-backend communication."""
         html = """<!DOCTYPE html>
 <html lang="en">
@@ -311,6 +277,19 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
           Select origin and destination to query backend...
         </div>
       </div>
+
+      <div class="card">
+        <h3>Dynamic Weather Pipeline</h3>
+        <p style="font-size: 12px; color: #94a3b8;">Trigger complete pipeline: Weather &rarr; Risk &rarr; Graph Weights &rarr; Dijkstra Reroute.</p>
+        <div style="margin-bottom: 8px;">
+          <span style="font-size: 12px; color: #cbd5e1;">Data Source: </span>
+          <span id="weather-status-badge" class="pill pill-Moderate">READY</span>
+        </div>
+        <input type="password" id="input-owm-key" placeholder="OpenWeatherMap API Key (optional)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #475569; background: #334155; color: white; font-size: 12px; margin-bottom: 8px; box-sizing: border-box;" />
+        <button id="btn-refresh-weather" onclick="refreshWeather(false)">Refresh Weather (Auto / Fallback)</button>
+        <button class="btn-secondary" onclick="refreshWeather(true)" style="margin-top: 0;">Refresh Weather (Mock Viva Demo)</button>
+        <div id="weather-refresh-info" style="font-size: 11px; color: #94a3b8; margin-top: 6px; line-height: 1.4;"></div>
+      </div>
     </div>
     <div id="map"></div>
   </div>
@@ -344,13 +323,54 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
             fillOpacity: 0.9
           }).addTo(markersLayer);
 
+          const w = loc.weather || {};
+          const wSrc = loc.weather_source || w.source || 'mock';
+          const wFresh = w.freshness || (loc.weather_stale ? 'stale' : 'fresh');
+
           marker.bindPopup(`<b>${loc.name} (${loc.location_id})</b><br>` +
                            `Risk Score: <b>${loc.risk_score}</b> <span class="pill pill-${loc.risk_level}">${loc.risk_level}</span><br>` +
-                           `Elevation: ${loc.elevation_m}m | Slope: ${loc.slope_deg}°`);
+                           `Elevation: ${loc.elevation_m}m | Slope: ${loc.slope_deg}°<br>` +
+                           `Weather: <b>${w.weather_desc || 'Overcast'}</b> (${w.forecast_24h_mm || 0}mm rain, ${w.temp_c || 20}°C)<br>` +
+                           `Source: <b>${wSrc}</b> (${wFresh})`);
         });
       } catch (e) {
         document.getElementById('api-status').innerText = 'API Disconnected';
         document.getElementById('api-status').style.background = '#dc2626';
+      }
+    }
+
+    async function refreshWeather(forceMock) {
+      const info = document.getElementById('weather-refresh-info');
+      const badge = document.getElementById('weather-status-badge');
+      const apiKey = document.getElementById('input-owm-key').value.trim();
+      info.innerHTML = '<span style="color: #38bdf8;">Running 6-stage end-to-end pipeline...</span>';
+
+      try {
+        let url = '/api/weather/refresh';
+        if (forceMock) {
+          url += '?use_mock=1';
+        } else if (apiKey) {
+          url += `?live=1&api_key=${encodeURIComponent(apiKey)}`;
+        }
+
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Weather refresh failed');
+        }
+
+        badge.className = 'pill ' + (data.is_live ? 'pill-Low' : (data.system_status === 'mixed' ? 'pill-Moderate' : 'pill-High'));
+        badge.innerText = data.data_source.toUpperCase();
+
+        const s = data.freshness_summary || {};
+        info.innerHTML = `<b>Status:</b> ${data.system_status} (Live: ${s.live_count || 0}, Cache: ${s.cache_count || 0}, Fallback: ${s.fallback_count || 0}, Mock: ${s.mock_count || 0})<br>` +
+                         `<b>Pipeline:</b> ${data.pipeline_stages_completed ? data.pipeline_stages_completed.length : 6} stages completed.<br>` +
+                         `Scored ${data.scored_count} locations and updated route corridors.`;
+
+        await loadLocations();
+        await calculateRoute();
+      } catch (err) {
+        info.innerHTML = `<span style="color: #ef4444;">Error: ${err.message}</span>`;
       }
     }
 
@@ -409,11 +429,16 @@ class SlopeShieldApiHandler(BaseHTTPRequestHandler):
         self.wfile.write(html.encode("utf-8"))
 
 
-def run_server(port: int = 8000, base_dir: Optional[str] = None):
+def run_server(port: int = 8000, base_dir: Optional[str] = None, use_mock: Optional[bool] = None, api_key: Optional[str] = None):
     """Start the SlopeShield REST API and Frontend Bridge Server."""
     backend = SlopeShieldBackend(base_dir)
     backend.initialize()
-    backend.refresh_weather_and_scores(mode="mock")
+
+    effective_key = (api_key or os.environ.get("OWM_API_KEY", "")).strip()
+    if use_mock is None:
+        use_mock = False if effective_key else True
+
+    backend.refresh_weather_and_scores(use_mock=use_mock, api_key=effective_key)
 
     SlopeShieldApiHandler.backend = backend
     server_address = ("127.0.0.1", port)
@@ -421,8 +446,7 @@ def run_server(port: int = 8000, base_dir: Optional[str] = None):
 
     print(f"==================================================================")
     print(f" SlopeShield REST API Server running on http://127.0.0.1:{port}")
-    print(f" Full Interactive Frontend Map: http://127.0.0.1:{port}/")
-    print(f" Embedded Test Dashboard:      http://127.0.0.1:{port}/dashboard")
+    print(f" Frontend / Leaflet Map interactive dashboard: http://127.0.0.1:{port}/")
     print(f"==================================================================")
     try:
         httpd.serve_forever()
