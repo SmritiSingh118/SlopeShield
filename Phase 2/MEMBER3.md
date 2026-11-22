@@ -1,419 +1,440 @@
-# My Contribution — Anshika Gaur (Member 3)
 
-> **Student Name:** Anshika Gaur  
-> **Student ID:** 2510014858  
-> **Role:** Member 3 — OOP Architecture, File Handling, Backend & Integration<br>
-> **Team:** The Debug Divas  
-> **Project:** SlopeShield — Intelligent Landslide Risk & Safe Route System  
-> **Project Repository:** [SlopeShield](https://github.com/SmritiSingh118/SlopeShield)
+# MEMBER 3 — Individual Contribution Report
+
+## SlopeShield: Intelligent Landslide Risk & Safe Route System
+
+**Student:** Anshika Gaur  
+**Role:** Member 3 — OOP Architecture, File Handling, Backend & Integration  
+**Team:** The Debug Divas  
+**Team ID:** T099  
+**Repository:** [SmritiSingh118/SlopeShield](https://github.com/SmritiSingh118/SlopeShield)
 
 ---
 
 ## 1. Role and Responsibilities
 
-As **Member 3**, my assigned mandate was to construct the unified engineering backbone of SlopeShield. While Member 1 focused on environmental data and risk science, and Member 2 focused on graph theory and algorithmic pathfinding, my responsibility was to convert isolated scripts into an extensible, production-ready, object-oriented software system:
+My main responsibility was to build the software backbone that connects the different modules of SlopeShield. I worked on converting separate components into a unified, object-oriented backend and providing an API through which the frontend can communicate with the system.
 
-1. **OOP Architecture:** Designing domain models, enforcing encapsulation, and applying appropriate inheritance and polymorphism across the codebase.
-2. **CSV/JSON File Handling:** Building a centralized, polymorphic, and robust data persistence layer to parse and serialize tabular and hierarchical datasets with schema validation and error tolerance.
-3. **Backend Integration:** Implementing a centralized Backend Facade controller (`SlopeShieldBackend`) that pipelines Member 1's scientific risk scoring directly into Member 2's DSA route engine.
-4. **Backend $\rightarrow$ Frontend Connection:** Designing a zero-dependency REST API server (`backend/server.py`) with full CORS support and a clean JSON schema contract to serve Member 4's interactive Leaflet map.
-5. **Team Integration & Orchestration:** Building the master CLI (`main.py`), ensuring backwards-compatible C++ compilation under college lab environments, and creating the end-to-end integration test suite (`tests/test_integration.py`).
+My key responsibilities were:
+
+1. **OOP Architecture:** Creating domain models and organizing the code into reusable classes and modules.
+2. **CSV/JSON File Handling:** Implementing common file-reading and file-writing interfaces, validation, and safe data persistence.
+3. **Backend Integration:** Connecting the risk-assessment module with the graph and route-planning module through a central backend service.
+4. **REST API:** Providing HTTP endpoints that allow the frontend to retrieve locations, roads, routes, and simulation results.
+5. **Project Orchestration and Testing:** Maintaining the master command-line entry point and contributing to end-to-end integration testing.
 
 ---
 
-## 2. OOP Implementation & Architecture
+## 2. System Architecture
 
-I restructured the system from procedural scripts into a **4-Layer Object-Oriented Architecture**:
+The backend follows a layered structure. The frontend communicates with the Python backend through HTTP requests and JSON responses. The backend coordinates data handling, risk assessment, and route planning.
 
-```
-+-----------------------------------------------------------------------------------+
-|                           PRESENTATION LAYER (Member 4)                           |
-|       Leaflet.js Map  ·  Interactive UI  ·  Hazard Simulator  ·  Route Cards       |
-+-----------------------------------------------------------------------------------+
-                                         ▲
-                         HTTP / REST API │ (JSON over HTTP)
-                                         ▼
-+-----------------------------------------------------------------------------------+
-|                    BACKEND & INTEGRATION FACADE (Member 3 )                        |
-|   SlopeShieldBackend  ·  HTTP APIServer  ·  Pipeline Controller  ·  Master CLI     |
-+-----------------------------------------------------------------------------------+
-                         ▲                                   ▲
-                         │                                   │
-+------------------------┴----------+     +------------------┴----------------------+
-|     ENVIRONMENTAL RISK LAYER      |     |           DSA ROUTE ENGINE              |
-|           (Member 1)              |     |              (Member 2)                 |
-|  - WeatherFetcher (Live / Mock)   |     |  - Graph (Adjacency List)               |
-|  - BaseScorer -> WeightedScorer   |     |  - Custom Min-Heap Priority Queue (CLRS)|
-|  - RiskProfile & Classifications  |     |  - BaseRouter -> DijkstraRouter         |
-+-----------------------------------+     +-----------------------------------------+
-                         ▲                                   ▲
-                         │                                   │
-+------------------------┴-----------------------------------┴----------------------+
-|                      DATA INGESTION & PERSISTENCE LAYER (Member 3)                 |
-|   BaseDataHandler  ───►  CsvHandler  ·  JsonHandler  ·  Validation & Schemas      |
-|   Locations CSV · Roads CSV · Weather JSON · Risk Scores CSV · Route Output JSON   |
-+-----------------------------------------------------------------------------------+
+```text
++-------------------------------------------------------------+
+|                 PRESENTATION LAYER                          |
+|          Leaflet Map · Interactive UI · Route Cards         |
++-------------------------------------------------------------+
+                         |
+                    HTTP / JSON
+                         |
++-------------------------------------------------------------+
+|              BACKEND & INTEGRATION LAYER                    |
+|       SlopeShieldBackend · REST API · Master CLI             |
++-------------------------------------------------------------+
+              |                              |
++-----------------------------+  +----------------------------+
+|    ENVIRONMENTAL RISK       |  |      ROUTE PLANNING        |
+|    Weather and Risk Scoring |  | Graph · Min-Heap ·         |
+|    Static + Dynamic Risk    |  | Dijkstra Algorithm         |
++-----------------------------+  +----------------------------+
+              |                              |
++-------------------------------------------------------------+
+|              DATA HANDLING & PERSISTENCE                    |
+|       BaseDataHandler · CsvHandler · JsonHandler             |
+|             CSV / JSON datasets and outputs                 |
++-------------------------------------------------------------+
 ```
 
-### Design Patterns Applied:
-1. **Facade Pattern (`SlopeShieldBackend`)**: Hides the multi-step complexity of dataset ingestion, dynamic weather processing, risk calculation, adjacency graph construction, and Dijkstra pathfinding behind clean, high-level method calls (`initialize()`, `refresh_weather_and_scores()`, `plan_route()`, `simulate_hazard()`).
-2. **Strategy Pattern (`BaseRoutePlanner` / `RoutingMode`)**: Allows runtime swapping of routing strategies between *Shortest Distance* (minimizing physical road kilometers) and *Safest Path* (minimizing hazard-weighted costs).
-3. **Template / Polymorphic Handler Pattern (`BaseDataHandler`)**: Defines standard abstract interfaces for file I/O, implemented specifically for CSV (tabular data) and JSON (nested hierarchical documents).
+### Main Architectural Components
+
+- **Domain Models:** Represent locations, roads, weather readings, risk profiles, and route results.
+- **Data Handling Layer:** Loads and saves CSV and JSON data.
+- **Backend Service:** Coordinates risk scoring, graph updates, route planning, simulation, and output persistence.
+- **REST API Server:** Exposes backend functionality to the frontend.
+
+### Design Patterns and Principles
+
+1. **Facade Pattern:** `SlopeShieldBackend` provides a central interface to operations that would otherwise require several modules to be called separately.
+2. **Abstract Base Classes:** Common interfaces are defined for data handlers, risk scorers, and route planners.
+3. **Polymorphism:** Concrete classes implement common interfaces, allowing implementations to be replaced without changing the code that uses those interfaces.
+4. **Separation of Concerns:** Data models, file handling, risk scoring, route planning, and HTTP communication are kept in separate modules.
 
 ---
 
-## 3. Classes and Objects Used
+## 3. OOP Implementation
 
-All domain models and operational engines were built inside the `core/` and `backend/` packages:
+The following classes are part of the project architecture.
 
-| Class | File Location | Responsibility & Behavior |
-| :--- | :--- | :--- |
-| **`BaseEntity`** | `core/models.py` | Abstract Base Class enforcing standardized dictionary serialization (`to_dict()`). |
-| **`RiskProfile`** | `core/models.py` | Encapsulates static, dynamic, and total risk scores (0–100) and automatically derives the categorical risk level (`Low`, `Moderate`, `High`, `Critical`). |
-| **`WeatherReading`** | `core/models.py` | Encapsulates current rainfall, 24h forecast, humidity, 3-day antecedent rainfall, and temperature metrics. |
-| **`Location`** | `core/models.py` | Encapsulates geographical pilgrimage nodes (coordinates, elevation, slope, soil, landuse, lithology, past history) and embeds its own `RiskProfile` and `WeatherReading` instances. |
-| **`RoadSegment`** | `core/models.py` | Encapsulates highway edges, physical distances, and calculates traversal weights with critical safety penalties. |
-| **`RouteResult`** | `core/models.py` | Encapsulates Dijkstra traversal output: node path, path names, Leaflet GPS coordinates `[[lat, lon], ...]`, distance, cost, and segment breakdowns. |
-| **`RouteComparison`** | `core/models.py` | Encapsulates the side-by-side comparison of Shortest vs Safest routes, calculating detour distance and risk reduction percentage. |
-| **`BaseDataHandler`** | `core/data_handlers.py` | Abstract Base Class defining standard `read()` and `write()` interfaces for file I/O. |
-| **`CsvHandler`** | `core/data_handlers.py` | Concrete CSV handler with whitespace trimming, empty line filtering, and schema validation. |
-| **`JsonHandler`** | `core/data_handlers.py` | Concrete JSON handler with UTF-8 encoding, indent formatting, and atomic temporary writes. |
-| **`DataManager`** | `core/data_handlers.py` | High-level dataset coordinator managing paths, model hydration, validation, and file persistence. |
-| **`BaseRiskScorer`** | `core/risk_scorer.py` | Abstract Base Class defining the contract for environmental scoring models. |
-| **`WeightedRiskScorer`**| `core/risk_scorer.py` | Concrete risk scorer implementing Member 1's scientific 60% static / 40% dynamic formula. |
-| **`MinPriorityQueue`** | `core/route_planner.py` | Custom Min-Heap priority queue implemented from scratch (CLRS complete binary tree mechanics). |
-| **`RoadGraph`** | `core/route_planner.py` | Space-efficient Adjacency List graph storing `Location` vertices and `RoadSegment` edges. |
-| **`BaseRoutePlanner`** | `core/route_planner.py` | Abstract Base Class defining pathfinding algorithms. |
-| **`DijkstraRoutePlanner`**| `core/route_planner.py` | Concrete Dijkstra router computing single-source paths and detour comparisons. |
-| **`SlopeShieldBackend`**| `backend/service.py` | Unified Facade controller orchestrating the entire end-to-end data and execution pipeline. |
-| **`SlopeShieldApiHandler`**| `backend/server.py` | HTTP Request Handler implementing REST endpoints and serving the Leaflet map preview. |
-
----
-
-## 4. Encapsulation, Inheritance & Polymorphism
+| Class | File | Responsibility |
+|---|---|---|
+| `BaseEntity` | `core/models.py` | Common base class for model serialization |
+| `RiskProfile` | `core/models.py` | Stores static, dynamic, and total risk scores and risk level |
+| `WeatherReading` | `core/models.py` | Stores weather measurements used by the risk module |
+| `Location` | `core/models.py` | Represents a geographical location and its associated risk/weather data |
+| `RoadSegment` | `core/models.py` | Represents a road connection and its distance/risk information |
+| `RouteResult` | `core/models.py` | Stores the result of a route calculation |
+| `RouteComparison` | `core/models.py` | Stores comparison information for shortest and safest routes |
+| `BaseDataHandler` | `core/data_handlers.py` | Abstract interface for file reading and writing |
+| `CsvHandler` | `core/data_handlers.py` | Reads and writes CSV data |
+| `JsonHandler` | `core/data_handlers.py` | Reads and writes JSON data |
+| `DataManager` | `core/data_handlers.py` | Coordinates loading, validation, and persistence |
+| `BaseRiskScorer` | `core/risk_scorer.py` | Base interface for risk-scoring implementations |
+| `WeightedRiskScorer` | `core/risk_scorer.py` | Implements weighted risk-scoring logic |
+| `MinPriorityQueue` | `core/route_planner.py` | Custom Min-Heap priority queue |
+| `RoadGraph` | `core/route_planner.py` | Represents the road network using an adjacency list |
+| `BaseRoutePlanner` | `core/route_planner.py` | Base interface for route-planning implementations |
+| `DijkstraRoutePlanner` | `core/route_planner.py` | Calculates routes using Dijkstra's algorithm |
+| `SlopeShieldBackend` | `backend/service.py` | Coordinates the complete backend workflow |
+| `SlopeShieldApiHandler` | `backend/server.py` | Handles HTTP API requests |
 
 ### A. Encapsulation
-Every domain class encapsulates its internal variables using private attributes (e.g., `self._total_score`, `self._risk_level`, `self._distance_km`) and exposes controlled access through read-only `@property` decorators:
 
-```python
-# From core/models.py
-class RiskProfile(BaseEntity):
-    def __init__(self, static_score: float = 0.0, dynamic_score: float = 0.0, 
-                 total_score: float = 0.0, risk_level: str = "Low"):
-        self._static_score: float = float(static_score)
-        self._dynamic_score: float = float(dynamic_score)
-        self._total_score: float = float(total_score)
-        self._risk_level: str = str(risk_level)
+Encapsulation keeps an object's internal data controlled through its methods and properties.
 
-    @property
-    def total_score(self) -> float:
-        return self._total_score
+For example, `RiskProfile` stores risk values in attributes such as `_total_score` and `_risk_level`. Its score-update method updates the values and derives the corresponding risk category.
 
-    @property
-    def risk_level(self) -> str:
-        return self._risk_level
+The project uses the following risk categories:
 
-    def update_scores(self, static_score: float, dynamic_score: float, total_score: float):
-        """Enforces that risk_level can NEVER contradict total_score."""
-        self._static_score = round(float(static_score), 2)
-        self._dynamic_score = round(float(dynamic_score), 2)
-        self._total_score = round(float(total_score), 2)
-        
-        # Invariant enforcement
-        if self._total_score < 25.0:   self._risk_level = "Low"
-        elif self._total_score < 50.0: self._risk_level = "Moderate"
-        elif self._total_score < 75.0: self._risk_level = "High"
-        else:                          self._risk_level = "Critical"
-```
+- Low: Score below 25
+- Moderate: Score from 25 to below 50
+- High: Score from 50 to below 75
+- Critical: Score of 75 or above
 
 ### B. Inheritance
-I created clean abstract base classes (`ABC`) to declare architectural contracts that concrete subclasses inherit and fulfill:
-- `BaseEntity` $\rightarrow$ Inherited by `Location`, `RoadSegment`, `RiskProfile`, `WeatherReading`, `RouteResult`, `RouteComparison`.
-- `BaseDataHandler` $\rightarrow$ Inherited by `CsvHandler` and `JsonHandler`.
-- `BaseRiskScorer` $\rightarrow$ Inherited by `WeightedRiskScorer`.
-- `BaseRoutePlanner` $\rightarrow$ Inherited by `DijkstraRoutePlanner`.
 
-```python
-# From core/data_handlers.py
-class BaseDataHandler(ABC):
-    @abstractmethod
-    def read(self, file_path: str) -> Any:
-        pass
+Abstract base classes define common methods that their child classes implement:
 
-    @abstractmethod
-    def write(self, file_path: str, data: Any) -> bool:
-        pass
-
-class CsvHandler(BaseDataHandler):
-    def read(self, file_path: str) -> List[Dict[str, str]]:
-        # Concrete implementation for tabular data
-        ...
-
-class JsonHandler(BaseDataHandler):
-    def read(self, file_path: str) -> Any:
-        # Concrete implementation for hierarchical JSON
-        ...
-```
+- `BaseEntity` → Domain model classes
+- `BaseDataHandler` → `CsvHandler` and `JsonHandler`
+- `BaseRiskScorer` → `WeightedRiskScorer`
+- `BaseRoutePlanner` → `DijkstraRoutePlanner`
 
 ### C. Polymorphism
-The backend interacts with abstract interfaces rather than concrete implementations:
-- The backend relies on `BaseDataHandler.read()` and `BaseDataHandler.write()`, allowing file formats to be substituted without altering business logic.
-- Route calculation invokes `BaseRoutePlanner.find_path()`, allowing future algorithms (such as $A^*$ or Bellman-Ford) to be introduced polymorphically without changing the service facade.
+
+The backend can use common interfaces such as `read()`, `write()`, and route-planning methods while the concrete implementation handles the specific operation.
+
+For example, CSV and JSON handlers provide different implementations of the common data-handler interface.
 
 ---
 
-## 5. CSV/JSON File Handling
+## 4. CSV and JSON File Handling
 
-File operations in `core/data_handlers.py` were built to prevent runtime crashes, malformed records, and data corruption:
+I worked on the data-handling layer in `core/data_handlers.py`.
 
-1. **Schema & Header Verification:**
-   - Automatically cleans leading/trailing whitespace from fieldnames and values.
-   - Filters out blank rows and verifies essential columns before instantiating objects.
-2. **Type Coercion & Clamping:**
-   - Numerical fields are converted to `float` or `int` with safety bounding (e.g., negative rainfall is clamped to `0.0`, slope is capped at `70.0°`).
-3. **Atomic File Writes (Safe Persistence):**
-   - When writing JSON files (such as `route_output.json`), `JsonHandler` writes to a temporary file (`.tmp`) first and performs an atomic file replacement (`os.replace`). If an unexpected crash occurs during writing, the existing file remains uncorrupted.
-4. **Central Data Coordinator (`DataManager`):**
-   - Coordinates paths relative to project root (`BASE_DIR`).
-   - Loads `locations_static.csv` $\rightarrow$ returns hydrated `Dict[str, Location]`.
-   - Loads `road_network.csv` $\rightarrow$ returns hydrated `List[RoadSegment]`.
-   - Loads `risk_weights.json` $\rightarrow$ returns configuration dictionary.
-   - Persists - `data/risk_scores.csv`
-              - `data/risk_output.json`
-              - `data/route_output.json`
----
+Its responsibilities include:
 
-## 6. Backend Integration
+1. **Reading Datasets:** Loading location, road-network, configuration, and generated output files.
+2. **Validation:** Checking required fields and handling blank or malformed records.
+3. **Data Conversion:** Converting numeric values into the required data types before creating or updating objects.
+4. **CSV Handling:** Reading and writing tabular data through `CsvHandler`.
+5. **JSON Handling:** Reading and writing structured data through `JsonHandler`.
+6. **Safe Writes:** JSON output is written to a temporary file before replacement, reducing the chance of leaving a partially written output file.
+7. **Central Coordination:** `DataManager` manages data paths and coordinates loading and saving.
 
-In `backend/service.py`, I implemented `SlopeShieldBackend`, which unifies the entire multi-member system into an automated pipeline:
+### Project Data Files
 
-```
-[Raw CSV Datasets & Config]
-           │
-           ▼
-[DataManager (Member 3)] ──► Hydrates Location & RoadSegment Objects
-           │
-           ▼
-[WeightedRiskScorer (Member 1)] ──► Computes Static & Dynamic Scores (0-100)
-           │
-           ▼
-[Location.set_risk()] ──► Updates Encapsulated RiskProfile on all 11 Nodes
-           │
-           ▼
-[RoadGraph (Member 2)] ──► Updates Edge Weights (Distance * Multiplier + Penalty)
-           │
-           ▼
-[DijkstraRoutePlanner (Member 2)] ──► Computes Shortest vs Safest Paths
-           │
-           ▼
-[DataManager (Member 3)] ──► Saves data/risk_scores.csv & data/route_output.json
-           │
-           ▼
-[REST API Server (Member 3)] ──► Serves Endpoints to Frontend (Member 4)
-```
+- `locations_static.csv`
+- `road_network.csv`
+- `risk_weights.json`
+- `risk_scores.csv`
+- `risk_output.json`
+- `route_output.json`
 
-### Core Operations Provided by `SlopeShieldBackend`:
-- `initialize()`: Validates input datasets, builds the `RoadGraph`, and sets baseline weights.
-- `refresh_weather_and_scores(use_mock=True)`: Executes Member 1's risk engine across all 11 locations and persists the output.
-- `plan_route(source_id, dest_id, mode)`: Queries single-source Dijkstra routes.
-- `compare_route(source_id, dest_id)`: Generates detailed comparison metrics between Shortest and Safest paths.
-- `plan_all_standard_corridors()`: Evaluates all 7 standard Char Dham corridors and exports `data/route_output.json`.
-- `simulate_hazard(override_type, target, score, level)`: Dynamically injects disaster conditions (e.g. cloudburst at Rudraprayag) and updates graph traversal costs in real time.
-- `reset_hazards()`: Restores graph weights back to normal weather baseline.
+**Note:** The project uses CSV and JSON file-based storage. It does not use an SQL database.
 
 ---
 
-## 7. Backend $\rightarrow$ Frontend Communication
+## 5. Backend Integration
 
-In `backend/server.py`, I built a **zero-dependency, lightweight HTTP REST API server** utilizing Python's built-in `http.server`:
+The main integration work is coordinated by the `SlopeShieldBackend` class in `backend/service.py`.
 
-### REST API Endpoints:
+### Integrated Processing Flow
 
-| Endpoint | HTTP Method | Purpose | Response Format |
-| :--- | :--- | :--- | :--- |
-| `/api/health` | `GET` | Health check, system status, entity counts | JSON status |
-| `/api/locations` | `GET` | All 11 locations with GPS coordinates & risk levels | JSON array for Leaflet markers |
-| `/api/roads` | `GET` | All 14 road corridors with distance & risk costs | JSON array for road network |
-| `/api/routes` | `GET` | Precomputed comparisons for all standard corridors | Complete `route_output.json` |
-| `/api/route` | `GET` | On-demand path query: `?source=RISH&dest=BADR&mode=safest` | Waypoints, distance, cost, detour advice |
-| `/api/simulate` | `GET` / `POST` | Injects hazard: `?override_type=NODE&target=RUDR&score=77.08` | Real-time reroute confirmation |
-| `/api/simulate/reset`| `GET` / `POST` | Restores standard baseline weights | JSON status |
-| `/` | `GET` | Serves interactive Leaflet.js HTML dashboard | HTML page with live interactive map |
-
-### Frontend JSON Schema Contract (for Member 4's Leaflet Map):
-```json
-{
-  "source_id": "RISH",
-  "dest_id": "KEDN",
-  "is_identical": false,
-  "distance_diff_km": 88.0,
-  "risk_reduction_pct": 79.8,
-  "recommendation": "Safest route takes +88.0 km detour to reduce risk cost by 79.8% (avoids active landslide hazards).",
-  "safest_route": {
-    "total_distance_km": 321.0,
-    "total_risk_cost": 486.3,
-    "max_risk_level": "Moderate",
-    "path": ["RISH", "UTTK", "UKHI", "KEDN"],
-    "coordinates": [
-      [30.0869, 78.2676],
-      [30.7298, 78.4434],
-      [30.5100, 79.0900],
-      [30.7346, 79.0669]
-    ]
-  }
-}
+```text
+Location and Road CSV / JSON Files
+              |
+              v
+         DataManager
+              |
+              v
+     Location and Road Objects
+              |
+              v
+       Risk Scoring Module
+              |
+              v
+      Updated Location Risks
+              |
+              v
+          RoadGraph
+              |
+              v
+       Min-Heap + Dijkstra
+              |
+              v
+       Shortest / Safest Routes
+              |
+              v
+       Save CSV / JSON Outputs
+              |
+              v
+           REST API
+              |
+              v
+        Frontend Map UI
 ```
 
----
+### Main Backend Operations
 
-## 8. Integration with Teammates' Modules
+| Operation | Purpose |
+|---|---|
+| `initialize()` | Loads and validates datasets and prepares the graph |
+| `refresh_weather_and_scores()` | Runs the risk-scoring pipeline and updates risk outputs |
+| `plan_route()` | Calculates a route for the requested source, destination, and mode |
+| `compare_route()` | Compares shortest and safest route results |
+| `plan_all_standard_corridors()` | Calculates route results for configured standard corridors |
+| `simulate_hazard()` | Applies a simulated hazard and updates risk/route calculations |
+| `reset_hazards()` | Restores the normal baseline after simulation |
 
-### A. Integration with Smriti's Risk Assessment Module (Member 1)
-- Smriti created `locations_static.csv`, `risk_weights.json`, and the 60/40 scoring formulas.
-- I encapsulated her scoring logic inside `WeightedRiskScorer` and integrated her weather reading formats into `WeatherReading`.
-- My `SlopeShieldBackend` automatically runs her scoring pipeline, applies her threshold cutoffs (<25 Low, <50 Moderate, <75 High, $\ge 75$ Critical), and writes the contract files `risk_scores.csv` and `risk_output.json`.
+### Risk and Route Integration
 
-### B. Integration with Jahnvi's Graph & Dijkstra Module (Member 2)
-- Jahnvi built the road network topology (`road_network.csv`), custom Min-Heap Priority Queue, and Dijkstra algorithm.
-- I encapsulated her graph structure inside `RoadGraph` and her pathfinding logic inside `DijkstraRoutePlanner`.
-- My backend connects Smriti's risk scores directly to Jahnvi's edge weights:
-  $$\text{Edge Weight} = \text{Distance} \times \left(1 + 1.5 \times \frac{\text{Edge Risk}}{100}\right) + \text{Critical Penalty}$$
-- I also updated Jahnvi's C++ implementations (`src/route_engine.cpp` and `safe_route_planner.cpp`) to replace compiler-specific C++17 structured bindings and `gmtime_s` with portable C++14 constructs, allowing her C++ engine to compile and pass 8/8 tests on college lab MinGW GCC 6.3 compilers.
+The backend passes the risk information produced by the risk module into the road-network and route-planning workflow. The route planner can then compare routes using distance and risk-related costs rather than relying only on physical distance.
 
-### C. Integration with Sanya's Presentation Module (Member 4)
-- Sanya is responsible for the presentation layer.
-- I established the backend bridge so her frontend has zero blockers:
-  1. She can fetch real-time data dynamically via `http://127.0.0.1:8000/api/route`.
-  2. She can consume precomputed offline data directly from `data/route_output.json`.
-- I implemented an embedded test dashboard inside `backend/server.py` at `GET /` that demonstrates Leaflet map markers, colored polylines, and interactive detour buttons.
+The risk-scoring design uses:
 
-### Python and C++ Module Integration
+\[
+\text{Total Risk} = 0.6 \times \text{Static Risk}
++ 0.4 \times \text{Dynamic Risk}
+\]
 
-The backend and core architecture described in this report are implemented in Python. The C++ route-engine implementation is maintained separately and can be compiled and tested independently. Runtime invocation of the C++ engine by the Python backend should not be assumed unless that integration is implemented and verified.
+This allows weather-related changes to influence the risk values used by route planning.
 
 ---
 
-## 9. Files I Worked On
+## 6. REST API — Backend to Frontend Communication
 
-| File | Status | Description of Work Performed |
-| :--- | :--- | :--- |
-| `core/models.py` | **Created** | Encapsulated OOP domain models (`BaseEntity`, `Location`, `RoadSegment`, `RiskProfile`, `WeatherReading`, `RouteResult`, `RouteComparison`). |
-| `core/data_handlers.py`| **Created** | Standardized file handling layer (`BaseDataHandler`, `CsvHandler`, `JsonHandler`, `DataManager`) with schema validation and atomic writes. |
-| `core/risk_scorer.py` | **Created** | OOP hierarchy (`BaseRiskScorer` $\rightarrow$ `WeightedRiskScorer`) wrapping Member 1's formula. |
-| `core/route_planner.py`| **Created** | OOP hierarchy (`BaseRoutePlanner` $\rightarrow$ `DijkstraRoutePlanner`, `RoadGraph`, `MinPriorityQueue`) wrapping Member 2's DSA. |
-| `core/__init__.py` | **Created** | Core package interface. |
-| `backend/service.py` | **Created** | `SlopeShieldBackend` Facade controller orchestrating the entire integration pipeline. |
-| `backend/server.py` | **Created** | Lightweight REST API server with CORS and embedded Leaflet verification dashboard. |
-| `backend/__init__.py` | **Created** | Backend package interface. |
-| `main.py` | **Created** | Master CLI orchestrator providing `--serve`, `--route`, `--simulate`, and `--test` options. |
-| `tests/test_integration.py`| **Created** | 5-phase end-to-end integration test suite verifying OOP models, file I/O, pipeline, detours, and HTTP API. |
-| `src/route_engine.cpp` | **Refactored**| Fixed C++17 structured binding and `gmtime_s` errors for portability on MinGW GCC 6.3. |
-| `safe_route_planner.cpp`| **Refactored**| Fixed C++17 structured binding and `gmtime_s` errors for portability on MinGW GCC 6.3. |
-| `MEMBER3.md` | **Created** | Comprehensive individual contribution report for viva and project evaluation. |
+I worked on the lightweight HTTP server in `backend/server.py`. It uses Python's built-in `http.server` module and returns JSON responses for API requests.
 
----
+### Main API Endpoints
 
-## 10. Testing Performed
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/health` | GET | Returns system health/status information |
+| `/api/locations` | GET | Returns location data, coordinates, and risk information |
+| `/api/roads` | GET | Returns road-network information |
+| `/api/routes` | GET | Returns prepared route comparisons |
+| `/api/route` | GET | Calculates a route for the requested source, destination, and mode |
+| `/api/refresh` | GET/POST, as supported by the running server | Refreshes weather/risk data |
+| `/api/simulate` | GET/POST | Applies a hazard simulation |
+| `/api/simulate/reset` | GET/POST | Resets the hazard simulation |
+| `/` | GET | Serves the backend's map preview where configured |
 
-All components were verified using automated test suites and live runtime verification:
+### API Base Address
 
-### Test Suite Execution Summary (`python main.py --test`):
-
-```
-==================================================================
- EXECUTING SLOPESHIELD COMPLETE MULTI-MEMBER TEST SUITE
-==================================================================
-
-[Phase 1/3] Running Member 1 Risk Tests (tests/test_risk.py)...
-  dry_winter_RUDR          74.9     2.4   45.9 Moderate Moderate  PASS
-  drizzle_DEHR             37.2     9.1   26.0 Moderate Moderate  PASS
-  heavy_MUSS               49.8    60.4   54.0     High     High  PASS
-  cloudburst_RUDR          74.9    80.4   77.1 Critical Critical  PASS
-  highstatic_norain_MALP   69.9     2.8   43.0 Moderate Moderate  PASS
-  lowstatic_heavy_DEHR     37.2    83.7   55.8     High     High  PASS
-  >> ALL TESTS PASSED (6/6)
-
-[Phase 2/3] Running Member 2 Route Engine Tests (tests/test_route.py)...
-  [1/5] MinPriorityQueue Unit Tests: PASSED
-  [2/5] Graph & Adjacency List Tests: PASSED
-  [3/5] Risk-Based Edge Weight Design & Monotonicity: PASSED
-  [4/5] Dijkstra Optimality & Invariant Checks: PASSED
-  [5/5] Replaying Multi-Scenario Route Comparisons: PASSED (8/8)
-  >> ALL MEMBER-2 ROUTE ENGINE TESTS PASSED (8/8)
-
-[Phase 3/3] Running Member 3 Integration Tests (tests/test_integration.py)...
-  [Phase 1] Validating OOP Architecture & Domain Models: PASSED
-  [Phase 2] Validating CSV and JSON File Handlers: PASSED
-  [Phase 3] Validating Backend Integration Pipeline: PASSED
-  [Phase 4] Validating Hazard Detour Routing: PASSED
-  [Phase 5] Validating Backend -> Frontend HTTP API Communication: PASSED
-  >> ALL MEMBER 3 INTEGRATION TESTS PASSED (5/5)
-
-==================================================================
- >> ALL PROJECT TESTS PASSED ACROSS ALL MODULES (19/19)!
-==================================================================
+```text
+http://127.0.0.1:8000
 ```
 
-### Detailed Verifications:
-1. **OOP Encapsulation & Domain Models:** Verified that updating scores in `RiskProfile` automatically sets the correct classification level and cannot disagree with the numeric score.
-2. **File Handler Safety:** Verified `CsvHandler` and `JsonHandler` read/write cycles on scratch files, verified whitespace cleaning, and verified atomic replacement.
-3. **Hazard Detour Routing (Case C04):** Verified that under normal weather, `RISH -> KEDN` traverses via Rudraprayag (`RISH -> RUDR -> UKHI -> KEDN`, 233 km). When a cloudburst is simulated on Rudraprayag (score: 77.08 Critical), Dijkstra automatically detours via Uttarkashi (`RISH -> UTTK -> UKHI -> KEDN`, 321 km), avoiding the hazard and reducing risk cost by 79.8%.
-4. **Live HTTP REST Communication:** Verified that a local server listening on port 8765 responds to `GET /api/health`, `GET /api/locations`, `GET /api/route`, and `GET /api/simulate` with `200 OK` and valid JSON structures.
-5. **C++ Compilation Test:** Compiled `src/route_engine.cpp` with `g++ -std=c++14 -O2 src/route_engine.cpp -o route_engine.exe` and verified `.\route_engine.exe --test` passed 8/8 tests.
+### Example Frontend API Request
 
----
-
-## 11. Current Status
-
-- **Completed:** Documented OOP models, CSV/JSON handling, backend pipeline, and API functionality, subject to verification against the current repository.
-- **Testing:** See the latest output from `python main.py --test` for the verified test results.
-- **Weather data:** Mock data is used by default; live API functionality requires verification with a valid API key.
-- **Remaining limitations:** Refer to Section 12 for known limitations and future improvements.
----
-
-## 12. Dependencies and Remaining Limitations
-
-1. **Member 4's Standalone UI Deliverable:**  
-   The backend API and data contracts are complete. Sanya can directly consume the API (`/api/route`) or disk output (`data/route_output.json`) when delivering her final standalone presentation frontend.
-2. **OpenWeatherMap Live vs Mock Mode:**  
-   The system runs offline by default using realistic, deterministic mock readings so that college viva demonstrations function without an active internet connection or API key. Live pulls are available whenever an OpenWeatherMap API key is supplied.
-3. **Single Active Simulation:**  
-   The current in-memory hazard simulation affects graph edge weights globally on the server; future enhancements could maintain per-session simulation contexts.
-
----
-
-## 13. How to Run and Test My Work
-
-### 1. Execute the Complete Pipeline End-to-End:
-```powershell
-python main.py
+```javascript
+fetch("http://127.0.0.1:8000/api/locations")
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+  });
 ```
-*Loads datasets, runs the risk engine, updates the graph, calculates all 7 Char Dham corridors, persists `data/route_output.json`, and prints the Shortest vs Safest comparison table.*
 
-### 2. Run the Full Multi-Member Automated Test Suite (19/19 Tests):
+The API acts as the communication bridge between the Python backend and the frontend. The frontend requests processed results from the backend and uses the returned information to update the map and route details.
+
+---
+
+## 7. Integration with Team Members
+
+My work connected the modules developed by the team.
+
+### A. Risk Assessment Module
+
+- Integrated the risk-scoring workflow into the central backend service.
+- Connected location and weather data with the risk profiles used by the system.
+- Ensured updated risk information could be passed to route planning.
+
+### B. Route Planning Module
+
+- Connected the road graph and Dijkstra route planner with the backend service.
+- Made route results available through backend operations and API responses.
+- Supported comparison between shortest-distance and safest-route results.
+
+### C. Frontend and Map Module
+
+- Provided API endpoints for the frontend to retrieve locations, roads, and routes.
+- Returned structured JSON data for map markers and route information.
+- Connected simulation and reset operations to the frontend workflow.
+
+### Python and C++ Integration Note
+
+The Python backend and C++ route-engine source files are maintained as separate implementations. The C++ programs can be compiled and tested independently. The Python backend should not be described as invoking the C++ executable at runtime unless that connection has been separately implemented and verified.
+
+---
+
+## 8. Files and Modules Worked On
+
+| File | Contribution |
+|---|---|
+| `core/models.py` | Domain models and object-oriented data structures |
+| `core/data_handlers.py` | CSV/JSON handlers and data coordination |
+| `core/risk_scorer.py` | Risk-scoring class structure and integration |
+| `core/route_planner.py` | Graph, Min-Heap, and route-planning class structure |
+| `core/__init__.py` | Core package interface |
+| `backend/service.py` | Central backend service/facade |
+| `backend/server.py` | HTTP REST API server |
+| `backend/__init__.py` | Backend package interface |
+| `main.py` | Master command-line entry point |
+| `tests/test_integration.py` | Backend and module integration tests |
+| `src/route_engine.cpp` | C++ portability/refactoring work |
+| `safe_route_planner.cpp` | C++ portability/refactoring work |
+| `MEMBER3.md` | Individual contribution documentation |
+
+---
+
+## 9. Testing and Validation
+
+The project test suite covers risk scoring, route planning, and backend integration.
+
+### Latest Recorded Test Summary
+
+| Test Group | Passed |
+|---|---:|
+| Risk Assessment Tests | 6/6 |
+| Route Engine Tests | 8/8 |
+| Backend Integration Tests | 6/6 |
+| **Total** | **20/20** |
+
+### Test Coverage
+
+- Risk-score calculations and risk-level classification.
+- Min-Heap and graph operations.
+- Risk-based route costs and Dijkstra route results.
+- OOP models and CSV/JSON file handling.
+- Backend pipeline integration.
+- REST API communication.
+- Hazard simulation and reset behavior.
+
+### Run the Test Suite
+
 ```powershell
 python main.py --test
 ```
 
-### 3. Launch the REST API Server & Leaflet Map Dashboard:
+**Testing Note:** A passing test suite verifies the tested software behavior. It should not, by itself, be presented as proof that a real OpenWeatherMap request succeeded. Live weather operation must be confirmed separately from a successful API response or a backend result identifying the live data source.
+
+---
+
+## 10. Weather Data Modes and Limitations
+
+The project supports a mock-data path for demonstrations and a live-weather path when a valid OpenWeatherMap API key is configured.
+
+- **Mock Mode:** Uses prepared readings so that the workflow can be demonstrated without depending on a live API request.
+- **Live Mode:** Requests weather information from OpenWeatherMap when the API key and network connection are available.
+- **Fallback Behavior:** If a live request cannot be completed, the application may use its configured fallback behavior. Fallback data must not be labelled as live weather.
+
+### Other Limitations
+
+1. The current location and road dataset covers a limited set of locations and corridors.
+2. Soil moisture is estimated using weather-related inputs rather than direct sensor measurements.
+3. Hazard simulation currently changes the server's in-memory state; it demonstrates how risk and routes respond to changed conditions.
+4. Live data availability depends on the external weather service, network connection, and a valid API key.
+
+---
+
+## 11. How to Run and Test the Backend
+
+Run these commands from the project's backend/root directory.
+
+### 1. Open the Project Directory
+
+```powershell
+cd "C:\path\to\Landslide_SlopeShield"
+```
+
+Replace the example path with the actual location of the project on your computer.
+
+### 2. Run the Complete Test Suite
+
+```powershell
+python main.py --test
+```
+
+### 3. Run the Backend Server
+
 ```powershell
 python main.py --serve --port 8000
 ```
-*Open your web browser and navigate to: `http://127.0.0.1:8000/`*
 
-### 4. Query an On-Demand Route via CLI:
+Keep this terminal open while using the application.
+
+### 4. Open the Backend Health Endpoint
+
+```text
+http://127.0.0.1:8000/api/health
+```
+
+The frontend can use the backend API at:
+
+```text
+http://127.0.0.1:8000
+```
+
+### 5. Run a Route Query from the Command Line
+
 ```powershell
 python main.py --route --source RISH --dest BADR --mode safest
 ```
 
-### 5. Demonstrate an Active Hazard Simulation (Detour Rerouting):
+### 6. Run a Hazard Simulation
+
 ```powershell
 python main.py --simulate --target RUDR --score 77.08 --level Critical
 ```
-*Demonstrates that Dijkstra detects the critical hazard at Rudraprayag and automatically diverts the path via Uttarkashi.*
 
-### 6. Compile and Run the Portable C++ Twin:
+### 7. Compile and Test the Standalone C++ Route Engine
+
 ```powershell
 g++ -std=c++14 -O2 src/route_engine.cpp -o route_engine.exe
 .\route_engine.exe --test
 ```
+
+The C++ command is a separate compile-and-test workflow. It is not a command to start the Python REST API.
+
+---
+
+## 12. Learning Outcomes
+
+Through this contribution, I gained practical experience in:
+
+- Designing a modular object-oriented software architecture.
+- Applying encapsulation, inheritance, abstraction, and polymorphism.
+- Working with CSV and JSON file handling.
+- Building a Python HTTP server and REST API.
+- Integrating multiple software modules through a central backend service.
+- Connecting risk-assessment results with graph-based route planning.
+- Testing backend workflows and debugging integration issues.
+- Collaborating with teammates to connect separate modules into one working prototype.
+
+---
+
+## 13. Summary of Individual Contribution
+
+My contribution focused on the backend foundation of SlopeShield. I worked on the OOP structure, data-handling layer, central backend service, REST API, and integration/testing workflow. These components allow the risk-assessment and route-planning modules to work together and make their results available to the frontend.
+
+**In one line:** I connected the project's data, risk-assessment, route-planning, and frontend modules through a modular Python backend and REST API.
